@@ -14,5 +14,11 @@ Install this package using pip like so:
 
 ```
 pip install jaxonloader
-
 ```
+
+## Usage
+
+Pretty much exactly as you would use PyTorch's DataLoader. Create a dataset class by inheriting
+from the `jaxonloader` dataset and implement the `__len__` and `__getitem__` functions. Then simply pass that to the DataLoader class as argument.
+
+Examples coming soon.
