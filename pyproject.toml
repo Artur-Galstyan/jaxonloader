@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "jaxonloader"
+version = "0.1.0"
+description = "A dataloader, but for JAX"
+authors = ["Artur A. Galstyan <galstyan.artu@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "jaxonloader" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+jax = "^0.4.24"
+jaxtyping = "^0.2.25"
+jaxlib = "^0.4.24"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.6.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
