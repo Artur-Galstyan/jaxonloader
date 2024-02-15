@@ -14,6 +14,9 @@ python = "^3.11"
 jax = "^0.4.24"
 jaxtyping = "^0.2.25"
 jaxlib = "^0.4.24"
+loguru = "^0.7.2"
+tqdm = "^4.66.2"
+beartype = "^0.17.2"
 
 
 [tool.poetry.group.dev.dependencies]
