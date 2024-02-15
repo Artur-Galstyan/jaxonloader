@@ -6,7 +6,7 @@ The idea of this package is to have a DataLoader similar to the PyTorch one. To 
 
 Unfortunately, this also means that this package does _not_ follow the functional programming paradigm, because neither does the PyTorch DataLoader API. While in that regard this DataLoader is not _functional_ per se, it still allows for reproducability since you provide a random key to shuffle the data (if you want to).
 
-At the moment, this package is not yet a 1:1 mapping from PyTorch's DataLoader, but one day, we will *holding up arm and clenching fist*
+At the moment, this package is not yet a 1:1 mapping from PyTorch's DataLoader, but one day, we will! \**holding up arm and clenching fist\**
 
 ## Installation
 
