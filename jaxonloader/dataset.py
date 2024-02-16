@@ -7,5 +7,5 @@ class Dataset(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int):
         raise NotImplementedError

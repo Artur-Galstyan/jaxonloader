@@ -2,7 +2,7 @@ import os
 import pathlib
 
 import jax.numpy as jnp
-from beartype import Callable
+from beartype.typing import Callable
 from jaxtyping import Array
 from loguru import logger
 
@@ -29,7 +29,7 @@ def get_fashion_mnist():
 @jaxonloader_cache
 def get_tiny_shakespeare(
     block_size: int = 8, train_ratio: float = 0.8
-) -> tuple[Dataset, Dataset, int, Callable[str, Array], Callable[Array, str]]:
+) -> tuple[Dataset, Dataset, int, Callable[[str], Array], Callable[[Array], str]]:
     """
     Get the tiny shakespeare dataset from Andrej Karpathy's char-rnn repository.
 
@@ -62,7 +62,7 @@ def get_tiny_shakespeare(
         def __len__(self):
             return len(self.data)
 
-        def __getitem__(self, index):
+        def __getitem__(self, index: int):
             if index == -1:
                 index = len(self.data) - 1
             x = self.data[index : index + self.block_size]

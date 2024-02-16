@@ -1,4 +1,5 @@
 import jax
+import jax.numpy as jnp
 from jaxtyping import PRNGKeyArray
 
 from jaxonloader import Dataset
@@ -29,10 +30,10 @@ class DataLoader:
         if self.shuffle and key is None:
             raise ValueError("key must be provided when shuffle is True")
 
-        self.indices = list(range(len(dataset)))
+        self.indices = jnp.array(list(range(len(dataset))))
         self.key = key
 
-        if self.shuffle:
+        if self.shuffle and self.key is not None:
             self.key, subkey = jax.random.split(self.key)
             self.indices = jax.random.permutation(subkey, self.indices)
 
@@ -49,8 +50,6 @@ class DataLoader:
                 raise StopIteration
 
         batch_indices = self.indices[self._index : self._index + self.batch_size]
-        batch = self.dataset[batch_indices]
-
+        batch = jnp.array([self.dataset[i] for i in batch_indices])
         self._index += self.batch_size
-
-        return batch  
+        return batch
