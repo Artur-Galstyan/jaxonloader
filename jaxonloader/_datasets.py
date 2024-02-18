@@ -1,7 +1,10 @@
 import os
 import pathlib
+import urllib.request
+import zipfile
 
 import jax.numpy as jnp
+import polars as pl
 from beartype.typing import Callable
 from jaxtyping import Array
 from loguru import logger
@@ -10,8 +13,61 @@ from jaxonloader.dataset import Dataset
 from jaxonloader.utils import JAXONLOADER_PATH, jaxonloader_cache
 
 
+@jaxonloader_cache(dataset_name="mnist")
 def get_mnist():
-    raise NotImplementedError("get_mnist is not implemented yet.")
+    MNIST_TRAIN_URL = (
+        "https://omnisium.eu-central-1.linodeobjects.com/mnist/mnist_train.csv.zip"
+    )
+    MNIST_TEST_URL = (
+        "https://omnisium.eu-central-1.linodeobjects.com/mnist/mnist_test.csv.zip"
+    )
+
+    data_path = pathlib.Path(JAXONLOADER_PATH) / "mnist"
+    if not os.path.exists(data_path / "mnist_train.csv"):
+        logger.info(f"Downloading the dataset from {MNIST_TRAIN_URL}")
+        urllib.request.urlretrieve(MNIST_TRAIN_URL, data_path / "mnist_train.csv.zip")
+        with zipfile.ZipFile(data_path / "mnist_train.csv.zip", "r") as zip_ref:
+            logger.info(f"Extracting the dataset to {data_path}")
+            zip_ref.extractall(data_path)
+
+    if not os.path.exists(data_path / "mnist_test.csv"):
+        logger.info(f"Downloading the dataset from {MNIST_TEST_URL}")
+        urllib.request.urlretrieve(MNIST_TEST_URL, data_path / "mnist_test.csv.zip")
+        with zipfile.ZipFile(data_path / "mnist_test.csv.zip", "r") as zip_ref:
+            logger.info(f"Extracting the dataset to {data_path}")
+            zip_ref.extractall(data_path)
+
+    assert os.path.exists(
+        data_path / "mnist_train.csv"
+    ), "Failed to download the dataset"
+    assert os.path.exists(
+        data_path / "mnist_test.csv"
+    ), "Failed to download the dataset"
+
+    train_df = pl.read_csv(data_path / "mnist_train.csv")
+    test_df = pl.read_csv(data_path / "mnist_test.csv")
+
+    x_train = jnp.array(train_df.drop("label").to_numpy())
+    y_train = jnp.array(train_df["label"].to_numpy())
+
+    x_test = jnp.array(test_df.drop("label").to_numpy())
+    y_test = jnp.array(test_df["label"].to_numpy())
+
+    class MNISTDataset(Dataset):
+        def __init__(self, x, y) -> None:
+            self.x = x
+            self.y = y
+
+        def __len__(self):
+            return len(self.x)
+
+        def __getitem__(self, index: int):
+            return self.x[index], self.y[index]
+
+    train_dataset = MNISTDataset(x_train, y_train)
+    test_dataset = MNISTDataset(x_test, y_test)
+
+    return train_dataset, test_dataset
 
 
 def get_cifar10():
@@ -26,7 +82,7 @@ def get_fashion_mnist():
     raise NotImplementedError("get_fashion_mnist is not implemented yet.")
 
 
-@jaxonloader_cache
+@jaxonloader_cache(dataset_name="tinyshakespeare")
 def get_tiny_shakespeare(
     block_size: int = 8, train_ratio: float = 0.8
 ) -> tuple[Dataset, Dataset, int, Callable[[str], Array], Callable[[Array], str]]:
@@ -81,8 +137,6 @@ def get_tiny_shakespeare(
 
     def get_text():
         data_path = pathlib.Path(JAXONLOADER_PATH) / "tinyshakespeare/"
-        if not os.path.exists(data_path):
-            os.makedirs(data_path)
         if not os.path.exists(data_path / "input.txt"):
             import urllib.request
 

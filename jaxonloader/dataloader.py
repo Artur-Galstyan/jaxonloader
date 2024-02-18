@@ -50,6 +50,14 @@ class DataLoader:
                 raise StopIteration
 
         batch_indices = self.indices[self._index : self._index + self.batch_size]
-        batch = jnp.array([self.dataset[i] for i in batch_indices])
+
+        if isinstance(self.dataset[0], tuple):
+            dataset_return_length = len(self.dataset[0])
+            batch = tuple(
+                jnp.array([self.dataset[i][j] for i in batch_indices])
+                for j in range(dataset_return_length)
+            )
+        else:
+            batch = jnp.array([self.dataset[i] for i in batch_indices])
         self._index += self.batch_size
         return batch

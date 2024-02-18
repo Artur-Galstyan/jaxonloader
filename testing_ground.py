@@ -5,14 +5,18 @@ from jaxonloader.dataloader import DataLoader
 
 key = jax.random.PRNGKey(0)
 
+train, test, vocab_size, encoder, decoder = get_tiny_shakespeare(
+    block_size=8,
+    train_ratio=0.8,
+)
 
-train_dataset, test_dataset, vocab_size, encoder, decoder = get_tiny_shakespeare()
+train_loader = DataLoader(
+    train,
+    batch_size=4,
+    shuffle=True,
+    drop_last=True,
+    key=key,
+)
 
-train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=False, key=key)
-
-x = next(train_dataloader)[0]
-
-x, y = x[:-1], x[1:]
-
+x = next(iter(train_loader))
 print(x)
-print(y)

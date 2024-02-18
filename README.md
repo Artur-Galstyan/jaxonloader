@@ -18,7 +18,30 @@ pip install jaxonloader
 
 ## Usage
 
-Pretty much exactly as you would use PyTorch's DataLoader. Create a dataset class by inheriting
-from the `jaxonloader` dataset and implement the `__len__` and `__getitem__` functions. Then simply pass that to the DataLoader class as argument.
+Pretty much exactly as you would use PyTorch's DataLoader. Create a dataset class by inheriting from the `jaxonloader` dataset and implement the `__len__` and `__getitem__` functions. Then simply pass that to the DataLoader class as argument.
 
-Examples coming soon.
+On the other hand, you can also use some of the provided datasets, such as the MNIST dataset.
+
+```python
+
+import jax
+
+from jaxonloader import get_mnist
+from jaxonloader.dataloader import DataLoader
+key = jax.random.PRNGKey(0)
+
+train, test = get_mnist()
+
+train_loader = DataLoader(
+    train,
+    batch_size=4,
+    shuffle=False,
+    drop_last=True,
+    key=key,
+)
+x = next(iter(train_loader))
+print(x[0].shape) # (4, 784)
+print(x[1].shape) # (4,)
+
+
+```
