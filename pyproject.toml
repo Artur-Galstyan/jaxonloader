@@ -1,30 +1,48 @@
-[tool.poetry]
+[project]
 name = "jaxonloader"
 version = "0.1.3"
 description = "A dataloader, but for JAX"
-authors = ["Artur A. Galstyan <galstyan.artu@gmail.com>"]
-license = "MIT"
 readme = "README.md"
-packages = [
-    { include = "jaxonloader" },
+requires-python ="~=3.10"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Artur A. Galstyan", email = "mail@arturgalstyan.dev"},
+]
+dependencies=[
+  "jax>=0.4.24", 
+  "jaxlib>=0.4.24",
+  "jaxtyping>=0.2.25",
+  "tqdm>=4.66.2",
+  "beartype>=0.17.2",
+  "polars>=0.20.9",
+  "typing_extensions>=4.5.0",
+  "pre-commit>=3.6.1",
+  "loguru>=0.7.2",
+  "nox>=2023.4.22",
+  "pytest>=8.0.1",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-jax = "^0.4.24"
-jaxtyping = "^0.2.25"
-jaxlib = "^0.4.24"
-tqdm = "^4.66.2"
-beartype = "^0.17.2"
-polars = "^0.20.9"
 
+[tool.ruff]
+extend-include = ["*.ipynb"]
+fixable = ["I001", "F401"]
+ignore = ["E402", "E721", "E731", "E741", "F722"]
+ignore-init-module-imports = true
+select = ["E", "F", "I001"]
+src = []
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.6.1"
-loguru = "^0.7.2"
-nox = "^2023.4.22"
-pytest = "^8.0.1"
+[tool.ruff.isort]
+combine-as-imports = true
+extra-standard-library = ["typing_extensions"]
+lines-after-imports = 2
+order-by-type = false
+
+[tool.pyright]
+reportIncompatibleMethodOverride = true
+reportMissingImports = false
+include = ["jaxonloader", "tests"]
+
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

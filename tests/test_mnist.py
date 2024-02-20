@@ -1,5 +1,4 @@
 import jax
-
 from jaxonloader import get_mnist
 from jaxonloader.dataloader import DataLoader
 

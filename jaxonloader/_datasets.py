@@ -10,7 +10,42 @@ from jaxtyping import Array
 from loguru import logger
 
 from jaxonloader.dataset import Dataset
-from jaxonloader.utils import JAXONLOADER_PATH, jaxonloader_cache
+from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
+
+
+@jaxonloader_cache(dataset_name="kaggle")
+def get_kaggle_dataset(
+    dataset_name: str,
+    *,
+    kaggle_json_path: str | None = None,
+):
+    """
+    Get a dataset from Kaggle. You need to have the Kaggle
+    API token in your home directory.
+
+    Args:
+        dataset_name: The name of the dataset in Kaggle.
+
+    Returns:
+        The dataset object
+
+    Raises:
+        FileNotFoundError: If the dataset is not found in Kaggle.
+        ValueError: If the Kaggle API token is not found.
+    """
+
+    kaggle_path = (
+        pathlib.Path.home() / ".kaggle/kaggle.json"
+        if kaggle_json_path is None
+        else kaggle_json_path
+    )
+
+    if not os.path.exists(kaggle_path):
+        raise ValueError(
+            f"Kaggle API token not found at {kaggle_path}. Please download it from"
+            + "Kaggle and place it in your home directory, e.g."
+            + f"under {pathlib.Path.home() / '.kaggle'}."
+        )
 
 
 @jaxonloader_cache(dataset_name="mnist")

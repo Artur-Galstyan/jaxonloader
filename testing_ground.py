@@ -1,7 +1,7 @@
 import jax
-
 from jaxonloader import get_tiny_shakespeare
 from jaxonloader.dataloader import DataLoader
+
 
 key = jax.random.PRNGKey(0)
 
