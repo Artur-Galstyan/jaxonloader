@@ -9,7 +9,7 @@ from beartype.typing import Callable
 from jaxtyping import Array
 from loguru import logger
 
-from jaxonloader.dataset import Dataset, from_dataframes, StandardDataset
+from jaxonloader.dataset import Dataset, from_dataframes
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
 
 
@@ -19,7 +19,7 @@ def get_kaggle_dataset(
     force_redownload: bool = False,
     *,
     kaggle_json_path: str | None = None,
-) -> tuple[Dataset]:
+) -> list[Dataset]:
     """
     Get a dataset from Kaggle. You need to have the Kaggle
     API token in your home directory. Furthermore,
@@ -32,7 +32,7 @@ def get_kaggle_dataset(
         overwrite the existing one.
 
     Returns:
-        A tuple of datasets. Each dataset is of class StandardDataset.
+        A list of datasets. Each dataset is of class StandardDataset.
 
     Raises:
         FileNotFoundError: If the dataset is not found in Kaggle.
@@ -55,7 +55,7 @@ def get_kaggle_dataset_dataframes(
     force_redownload: bool = False,
     *,
     kaggle_json_path: str | None = None,
-) -> tuple[pl.DataFrame]:
+) -> list[pl.DataFrame]:
     """
     Get a dataset from Kaggle. You need to have the Kaggle
     API token in your home directory. Furthermore,
@@ -68,7 +68,7 @@ def get_kaggle_dataset_dataframes(
         overwrite the existing one.
 
     Returns:
-        A tuple of dataframes. Each dataframe is of class polars.DataFrame.
+        A list of dataframes. Each dataframe is of class polars.DataFrame.
 
     Raises:
         FileNotFoundError: If the dataset is not found in Kaggle.
@@ -138,7 +138,7 @@ def get_kaggle_dataset_dataframes(
             + "other file extensions, which are not supported yet :("
         )
 
-    return tuple(StandardDataset(df) for df in dataframes)
+    return dataframes
 
 
 @jaxonloader_cache(dataset_name="mnist")

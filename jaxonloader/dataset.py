@@ -30,10 +30,11 @@ class StandardDataset(Dataset):
         return tuple(c[idx] for c in self.columns)
 
 
-def from_dataframes(*dataframes: list[pl.DataFrame]) -> tuple[Dataset]:
-    datasets: tuple[Dataset] = ()
+def from_dataframes(*dataframes: list[pl.DataFrame]) -> list[Dataset]:
+    datasets: list[Dataset] = []
     for df in dataframes:
+        df: pl.DataFrame = df
         columns = [jnp.array(df[col].to_numpy()) for col in df.columns]
-        datasets += (StandardDataset(columns),)
+        datasets.append(StandardDataset(columns))
 
     return datasets
