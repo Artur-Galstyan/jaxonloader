@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+
+import jax.numpy as jnp
+import polars as pl
 from jaxtyping import Array
 
 
@@ -25,3 +28,12 @@ class StandardDataset(Dataset):
 
     def __getitem__(self, idx: int):
         return tuple(c[idx] for c in self.columns)
+
+
+def from_dataframes(*dataframes: list[pl.DataFrame]) -> tuple[Dataset]:
+    datasets: tuple[Dataset] = ()
+    for df in dataframes:
+        columns = [jnp.array(df[col].to_numpy()) for col in df.columns]
+        datasets += (StandardDataset(columns),)
+
+    return datasets

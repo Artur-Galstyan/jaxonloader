@@ -9,7 +9,7 @@ from beartype.typing import Callable
 from jaxtyping import Array
 from loguru import logger
 
-from jaxonloader.dataset import Dataset, StandardDataset
+from jaxonloader.dataset import Dataset, from_dataframes, StandardDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
 
 
@@ -38,6 +38,42 @@ def get_kaggle_dataset(
         FileNotFoundError: If the dataset is not found in Kaggle.
         ValueError: If the Kaggle API token is not found.
     """
+    try:
+        dataframes = get_kaggle_dataset_dataframes(
+            dataset_name, force_redownload, kaggle_json_path=kaggle_json_path
+        )
+    except Exception as e:
+        logger.error(f"Failed to get the dataset {dataset_name} from Kaggle.")
+        raise e
+
+    return from_dataframes(*dataframes)
+
+
+@jaxonloader_cache(dataset_name="kaggle")
+def get_kaggle_dataset_dataframes(
+    dataset_name: str,
+    force_redownload: bool = False,
+    *,
+    kaggle_json_path: str | None = None,
+) -> tuple[pl.DataFrame]:
+    """
+    Get a dataset from Kaggle. You need to have the Kaggle
+    API token in your home directory. Furthermore,
+    only the CSV files in the dataset will be used as support
+    for other file extensions is not implemented yet.
+
+    Args:
+        dataset_name: The name of the dataset in Kaggle.
+        force_redownload: Whether to force redownload the dataset and
+        overwrite the existing one.
+
+    Returns:
+        A tuple of dataframes. Each dataframe is of class polars.DataFrame.
+
+    Raises:
+        FileNotFoundError: If the dataset is not found in Kaggle.
+        ValueError: If the Kaggle API token is not found.
+    """
 
     kaggle_path = (
         pathlib.Path.home() / ".kaggle/kaggle.json"
@@ -60,7 +96,9 @@ def get_kaggle_dataset(
     if not os.path.exists(JAXONLOADER_PATH / "kaggle" / dataset_name):
         logger.info(f"Downloading the dataset {dataset_name} from Kaggle")
         os.makedirs(JAXONLOADER_PATH / "kaggle" / dataset_name)
-
+        logger.info(
+            f"Storing the dataset in {JAXONLOADER_PATH / 'kaggle' / dataset_name}"
+        )
         try:
             os.system(
                 f"kaggle datasets download -d {dataset_name} "
@@ -100,12 +138,7 @@ def get_kaggle_dataset(
             + "other file extensions, which are not supported yet :("
         )
 
-    datasets: tuple[Dataset] = ()
-    for df in dataframes:
-        columns = [jnp.array(df[col].to_numpy()) for col in df.columns]
-        datasets += (StandardDataset(columns),)
-
-    return datasets
+    return tuple(StandardDataset(df) for df in dataframes)
 
 
 @jaxonloader_cache(dataset_name="mnist")
