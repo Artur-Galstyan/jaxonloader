@@ -17,7 +17,7 @@ class DataLoader:
         self,
         dataset: Dataset,
         batch_size: int,
-        shuffle: bool,
+        shuffle: bool = False,
         drop_last: bool = False,
         *,
         key: PRNGKeyArray | None = None,

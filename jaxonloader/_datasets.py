@@ -9,25 +9,30 @@ from beartype.typing import Callable
 from jaxtyping import Array
 from loguru import logger
 
-from jaxonloader.dataset import Dataset
+from jaxonloader.dataset import Dataset, StandardDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
 
 
 @jaxonloader_cache(dataset_name="kaggle")
 def get_kaggle_dataset(
     dataset_name: str,
+    force_redownload: bool = False,
     *,
     kaggle_json_path: str | None = None,
-):
+) -> tuple[Dataset]:
     """
     Get a dataset from Kaggle. You need to have the Kaggle
-    API token in your home directory.
+    API token in your home directory. Furthermore,
+    only the CSV files in the dataset will be used as support
+    for other file extensions is not implemented yet.
 
     Args:
         dataset_name: The name of the dataset in Kaggle.
+        force_redownload: Whether to force redownload the dataset and
+        overwrite the existing one.
 
     Returns:
-        The dataset object
+        A tuple of datasets. Each dataset is of class StandardDataset.
 
     Raises:
         FileNotFoundError: If the dataset is not found in Kaggle.
@@ -46,6 +51,61 @@ def get_kaggle_dataset(
             + "Kaggle and place it in your home directory, e.g."
             + f"under {pathlib.Path.home() / '.kaggle'}."
         )
+
+    if force_redownload:
+        if os.path.exists(JAXONLOADER_PATH / "kaggle" / dataset_name):
+            logger.info(f"Removing the existing dataset {dataset_name}")
+            os.rmdir(JAXONLOADER_PATH / "kaggle" / dataset_name)
+
+    if not os.path.exists(JAXONLOADER_PATH / "kaggle" / dataset_name):
+        logger.info(f"Downloading the dataset {dataset_name} from Kaggle")
+        os.makedirs(JAXONLOADER_PATH / "kaggle" / dataset_name)
+
+        try:
+            os.system(
+                f"kaggle datasets download -d {dataset_name} "
+                + f"-p {JAXONLOADER_PATH / 'kaggle' / dataset_name}"
+            )
+        except Exception as e:
+            logger.error(f"Failed to download the dataset {dataset_name} from Kaggle.")
+            raise e
+
+    path_to_dataset = JAXONLOADER_PATH / "kaggle" / dataset_name
+    assert os.path.exists(
+        path_to_dataset
+    ), f"Failed to download the dataset {dataset_name} or the dataset does not exist."
+
+    user_account, trimmed_dataset_name = dataset_name.split("/")
+    downloaded_zip_from_kaggle = (
+        JAXONLOADER_PATH / "kaggle" / dataset_name / (trimmed_dataset_name + ".zip")
+    )
+    with zipfile.ZipFile(downloaded_zip_from_kaggle, "r") as zip_ref:
+        logger.info(f"Extracting the dataset to {path_to_dataset}")
+        zip_ref.extractall(path_to_dataset)
+
+    dataframes = []
+    for file in os.listdir(path_to_dataset):
+        if file.endswith(".csv"):
+            dataframes.append(pl.read_csv(path_to_dataset / file))
+    len_files_without_zip = len(os.listdir(path_to_dataset)) - 1
+    if len(dataframes) == 0:
+        raise FileNotFoundError(
+            f"No CSV file found in the dataset {dataset_name} from Kaggle."
+        )
+    elif len(dataframes) < len_files_without_zip:
+        logger.warning(
+            f"The folder contained {len(os.listdir(path_to_dataset))} files, but only"
+            + f" {len(dataframes)} of them are CSV files. The remaining "
+            + f"{len(os.listdir(path_to_dataset)) - len(dataframes)} files have "
+            + "other file extensions, which are not supported yet :("
+        )
+
+    datasets: tuple[Dataset] = ()
+    for df in dataframes:
+        columns = [jnp.array(df[col].to_numpy()) for col in df.columns]
+        datasets += (StandardDataset(columns),)
+
+    return datasets
 
 
 @jaxonloader_cache(dataset_name="mnist")

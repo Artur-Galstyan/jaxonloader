@@ -3,5 +3,5 @@ import nox
 
 @nox.session
 def tests(session):
-    session.run("poetry", "install", external=True)
+    session.run("pip", "install", ".")
     session.run("pytest", "tests")
