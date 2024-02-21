@@ -30,7 +30,7 @@ class StandardDataset(Dataset):
         return tuple(c[idx] for c in self.columns)
 
 
-def from_dataframes(*dataframes: list[pl.DataFrame]) -> list[Dataset]:
+def from_dataframes(*dataframes: pl.DataFrame) -> list[Dataset]:
     datasets: list[Dataset] = []
     for df in dataframes:
         df: pl.DataFrame = df
