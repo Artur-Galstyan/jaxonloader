@@ -2,14 +2,15 @@ import os
 import pathlib
 import urllib.request
 import zipfile
+from collections.abc import Callable
 
 import jax.numpy as jnp
+import pandas as pd
 import polars as pl
-from beartype.typing import Callable
 from jaxtyping import Array
 from loguru import logger
 
-from jaxonloader.dataset import Dataset, from_dataframes
+from jaxonloader.dataset import Dataset, StandardDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
 
 
@@ -66,6 +67,8 @@ def get_kaggle_dataset_dataframes(
         dataset_name: The name of the dataset in Kaggle.
         force_redownload: Whether to force redownload the dataset and
         overwrite the existing one.
+        kaggle_json_path: The path to the Kaggle API token. If not provided,
+        the default path is used.
 
     Returns:
         A list of dataframes. Each dataframe is of class polars.DataFrame.
@@ -142,7 +145,7 @@ def get_kaggle_dataset_dataframes(
 
 
 @jaxonloader_cache(dataset_name="mnist")
-def get_mnist():
+def get_mnist() -> tuple[Dataset, Dataset]:
     MNIST_TRAIN_URL = (
         "https://omnisium.eu-central-1.linodeobjects.com/mnist/mnist_train.csv.zip"
     )
@@ -181,19 +184,8 @@ def get_mnist():
     x_test = jnp.array(test_df.drop("label").to_numpy())
     y_test = jnp.array(test_df["label"].to_numpy())
 
-    class MNISTDataset(Dataset):
-        def __init__(self, x, y) -> None:
-            self.x = x
-            self.y = y
-
-        def __len__(self):
-            return len(self.x)
-
-        def __getitem__(self, index: int):
-            return self.x[index], self.y[index]
-
-    train_dataset = MNISTDataset(x_train, y_train)
-    test_dataset = MNISTDataset(x_test, y_test)
+    train_dataset = StandardDataset(x_train, y_train)
+    test_dataset = StandardDataset(x_test, y_test)
 
     return train_dataset, test_dataset
 
@@ -301,3 +293,22 @@ def get_tiny_shakespeare(
     test_dataset = MiniShakesPeare(test_data, block_size=block_size)
 
     return train_dataset, test_dataset, vocab_size, encoder, decoder
+
+
+def from_dataframes(*dataframes: pl.DataFrame | pd.DataFrame) -> list[Dataset]:
+    """
+    Convert a list of polars.DataFrame (or pandas.DataFrame) to a list of Dataset.
+
+    Args:
+        dataframes: A list of polars.DataFrame (or pandas.DataFrame).
+
+    Returns:
+        A list of Dataset.
+    """
+    datasets: list[Dataset] = []
+    for df in dataframes:
+        df: pl.DataFrame = df
+        columns = [jnp.array(df[col].to_numpy()) for col in df.columns]
+        datasets.append(StandardDataset(*columns))
+
+    return datasets

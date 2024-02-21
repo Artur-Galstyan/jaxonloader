@@ -45,3 +45,12 @@ print(x[1].shape) # (4,)
 
 
 ```
+
+## Performing Transformations
+
+As of now, transformations are not supported :(
+
+But - since you can get a dataset from a `DataFrame` - you can first 
+transform your data and then pass it to the `from_dataframe` function.
+
+It's not ideal, but it works for now.
