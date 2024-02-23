@@ -1,6 +1,7 @@
 import os
 import pathlib
 from functools import wraps
+from typing import Any
 
 
 JAXONLOADER_PATH = pathlib.Path.home() / ".jaxonloader"
@@ -17,10 +18,10 @@ def _make_data_dir_if_not_exists(dataset_name: str):
         os.makedirs(data_path)
 
 
-def jaxonloader_cache(dataset_name: str):
-    def decorator(func):
+def jaxonloader_cache(dataset_name: str) -> Any:
+    def decorator(func: Any) -> Any:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any):
             _make_jaxonloader_dir_if_not_exists()
             _make_data_dir_if_not_exists(dataset_name)
             return func(*args, **kwargs)

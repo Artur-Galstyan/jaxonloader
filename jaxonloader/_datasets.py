@@ -116,7 +116,7 @@ def get_kaggle_dataset_dataframes(
         path_to_dataset
     ), f"Failed to download the dataset {dataset_name} or the dataset does not exist."
 
-    user_account, trimmed_dataset_name = dataset_name.split("/")
+    _, trimmed_dataset_name = dataset_name.split("/")
     downloaded_zip_from_kaggle = (
         JAXONLOADER_PATH / "kaggle" / dataset_name / (trimmed_dataset_name + ".zip")
     )
@@ -124,7 +124,7 @@ def get_kaggle_dataset_dataframes(
         logger.info(f"Extracting the dataset to {path_to_dataset}")
         zip_ref.extractall(path_to_dataset)
 
-    dataframes = []
+    dataframes: list[pl.DataFrame] = []
     for file in os.listdir(path_to_dataset):
         if file.endswith(".csv"):
             dataframes.append(pl.read_csv(path_to_dataset / file))
@@ -231,7 +231,7 @@ def get_tiny_shakespeare(
     """
 
     class MiniShakesPeare(Dataset):
-        def __init__(self, data, block_size=block_size) -> None:
+        def __init__(self, data: Array, block_size: int = block_size) -> None:
             self.block_size = block_size
             self.data = data
 
@@ -307,8 +307,10 @@ def from_dataframes(*dataframes: pl.DataFrame | pd.DataFrame) -> list[Dataset]:
     """
     datasets: list[Dataset] = []
     for df in dataframes:
-        df: pl.DataFrame = df
-        columns = [jnp.array(df[col].to_numpy()) for col in df.columns]
+        dataframe: pl.DataFrame = (
+            pl.from_pandas(df) if isinstance(df, pd.DataFrame) else df
+        )
+        columns = [jnp.array(df[col].to_numpy()) for col in dataframe.columns]
         datasets.append(StandardDataset(*columns))
 
     return datasets

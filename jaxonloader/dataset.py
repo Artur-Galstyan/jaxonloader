@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 from jaxtyping import Array
 
 
 class Dataset(ABC):
     @abstractmethod
-    def __len__(self):
+    def __len__(self) -> int:
         raise NotImplementedError
 
     @abstractmethod
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx: int) -> Any:
         raise NotImplementedError
 
 
