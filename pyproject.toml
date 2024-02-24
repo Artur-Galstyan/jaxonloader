@@ -1,6 +1,6 @@
 [project]
 name = "jaxonloader"
-version = "0.1.10"
+version = "0.1.11"
 description = "A dataloader, but for JAX"
 readme = "README.md"
 requires-python ="~=3.10"
@@ -22,7 +22,8 @@ dependencies=[
   "pytest>=8.0.1",
   "kaggle>=1.6.6",
   "pandas>=2.2.0",
-  "pyarrow"
+  "pyarrow",
+  
 ]
 
 

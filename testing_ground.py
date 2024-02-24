@@ -5,38 +5,19 @@ from jaxonloader import StandardDataset  # noqa
 import jax.numpy as jnp  # noqa
 
 
-key = jax.random.PRNGKey(0)
-
-first_c = jnp.array([1, 2, 3, 4, 5])
-second_c = jnp.array([1, 2, 3, 4])
-dataset = StandardDataset(first_c, second_c)
-
-
-last = dataset[4]
-x, y = last
-assert y == 0
-
-dataloader = DataLoader(
-    dataset,
-    batch_size=2,
-    shuffle=False,
-    drop_last=False,
-    key=key,
+datasets = get_kaggle_dataset(
+    "rashikrahmanpritom/heart-attack-analysis-prediction-dataset",
+    combine_columns_to_row=True,
 )
+first_dataset, second_dataset = datasets
 
-print(len(dataloader))
-for x in dataloader:
-    print(x)
-
-
-dataloader = DataLoader(
-    dataset,
-    batch_size=2,
+train_loader = DataLoader(
+    first_dataset,
+    batch_size=4,
     shuffle=False,
     drop_last=True,
-    key=key,
 )
+x = next(iter(train_loader))
 
-print(len(dataloader))
-for x in dataloader:
-    print(x)
+assert not isinstance(x, tuple)
+assert x.shape == (4, 14)

@@ -20,6 +20,7 @@ def get_kaggle_dataset(
     force_redownload: bool = False,
     *,
     kaggle_json_path: str | None = None,
+    combine_columns_to_row: bool = False,
 ) -> list[Dataset]:
     """
     Get a dataset from Kaggle. You need to have the Kaggle
@@ -31,6 +32,11 @@ def get_kaggle_dataset(
         dataset_name: The name of the dataset in Kaggle.
         force_redownload: Whether to force redownload the dataset and
         overwrite the existing one.
+        kaggle_json_path: The path to the Kaggle API token. If not provided,
+        the default path is used.
+        combine_columns_to_row: Whether to combine the columns to a single row. If
+        True, the columns are concatenated to a single row. If False, the columns are
+        returned as a tuple.
 
     Returns:
         A list of datasets. Each dataset is of class StandardDataset.
@@ -47,7 +53,7 @@ def get_kaggle_dataset(
         logger.error(f"Failed to get the dataset {dataset_name} from Kaggle.")
         raise e
 
-    return from_dataframes(*dataframes)
+    return from_dataframes(*dataframes, combine_columns_to_row=combine_columns_to_row)
 
 
 @jaxonloader_cache(dataset_name="kaggle")
@@ -295,12 +301,17 @@ def get_tiny_shakespeare(
     return train_dataset, test_dataset, vocab_size, encoder, decoder
 
 
-def from_dataframes(*dataframes: pl.DataFrame | pd.DataFrame) -> list[Dataset]:
+def from_dataframes(
+    *dataframes: pl.DataFrame | pd.DataFrame, combine_columns_to_row: bool = False
+) -> list[Dataset]:
     """
     Convert a list of polars.DataFrame (or pandas.DataFrame) to a list of Dataset.
 
     Args:
         dataframes: A list of polars.DataFrame (or pandas.DataFrame).
+        combine_columns_to_row: Whether to combine the columns to a single row. If
+        True, the columns are concatenated to a single row. If False, the columns are
+        returned as a tuple. Keyword-only argument.
 
     Returns:
         A list of Dataset.
@@ -311,6 +322,8 @@ def from_dataframes(*dataframes: pl.DataFrame | pd.DataFrame) -> list[Dataset]:
             pl.from_pandas(df) if isinstance(df, pd.DataFrame) else df
         )
         columns = [jnp.array(df[col].to_numpy()) for col in dataframe.columns]
-        datasets.append(StandardDataset(*columns))
+        datasets.append(
+            StandardDataset(*columns, combine_columns_to_row=combine_columns_to_row)
+        )
 
     return datasets
