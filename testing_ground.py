@@ -18,11 +18,25 @@ assert y == 0
 
 dataloader = DataLoader(
     dataset,
-    batch_size=5,
+    batch_size=2,
+    shuffle=False,
+    drop_last=False,
+    key=key,
+)
+
+print(len(dataloader))
+for x in dataloader:
+    print(x)
+
+
+dataloader = DataLoader(
+    dataset,
+    batch_size=2,
     shuffle=False,
     drop_last=True,
     key=key,
 )
 
-x = next(iter(dataloader))
-print(x)
+print(len(dataloader))
+for x in dataloader:
+    print(x)

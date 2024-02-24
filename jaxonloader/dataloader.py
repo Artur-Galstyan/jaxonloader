@@ -43,11 +43,10 @@ class DataLoader:
         return self
 
     def __next__(self) -> Array | tuple[Array, ...]:
-        if self._index >= len(self.indices):
-            if self.drop_last:
-                raise StopIteration
-            else:
-                raise StopIteration
+        if self.drop_last and self._index + self.batch_size > len(self.indices):
+            raise StopIteration
+        elif self._index >= len(self.indices):
+            raise StopIteration
 
         batch_indices = self.indices[self._index : self._index + self.batch_size]
 
@@ -61,3 +60,9 @@ class DataLoader:
             batch = jnp.array([self.dataset[i] for i in batch_indices])
         self._index += self.batch_size
         return batch
+
+    def __len__(self) -> int:
+        if self.drop_last:
+            return len(self.indices) // self.batch_size
+        else:
+            return (len(self.indices) + self.batch_size - 1) // self.batch_size
