@@ -32,7 +32,7 @@ class StandardDataset(Dataset):
         res_tuple = ()
         for c in self.columns:
             if idx >= len(c):
-                res_tuple += (None,)
+                res_tuple += (0,)
             else:
                 res_tuple += (c[idx],)
 

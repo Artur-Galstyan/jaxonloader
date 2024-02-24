@@ -14,4 +14,15 @@ dataset = StandardDataset(first_c, second_c)
 
 last = dataset[4]
 x, y = last
-assert y is None
+assert y == 0
+
+dataloader = DataLoader(
+    dataset,
+    batch_size=5,
+    shuffle=False,
+    drop_last=True,
+    key=key,
+)
+
+x = next(iter(dataloader))
+print(x)

@@ -9,4 +9,4 @@ def test_none():
 
     last = dataset[4]
     x, y = last
-    assert y is None
+    assert y == 0
