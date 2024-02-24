@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any
 
 from jaxtyping import Array
 
 
+@dataclass
 class Dataset(ABC):
     @abstractmethod
     def __len__(self) -> int:
@@ -14,7 +16,10 @@ class Dataset(ABC):
         raise NotImplementedError
 
 
+@dataclass
 class StandardDataset(Dataset):
+    columns: tuple[Array, ...]
+
     def __init__(self, *columns: Array):
         self.columns = columns
         if not all(len(c) == len(columns[0]) for c in columns):
