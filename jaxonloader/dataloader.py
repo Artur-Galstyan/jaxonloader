@@ -1,6 +1,6 @@
 import jax
 import jax.numpy as jnp
-from jaxtyping import PRNGKeyArray
+from jaxtyping import Array, PRNGKeyArray
 
 from jaxonloader import Dataset
 
@@ -42,7 +42,7 @@ class DataLoader:
     def __iter__(self):
         return self
 
-    def __next__(self):
+    def __next__(self) -> Array | tuple[Array, ...]:
         if self._index >= len(self.indices):
             if self.drop_last:
                 raise StopIteration

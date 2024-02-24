@@ -22,13 +22,18 @@ class StandardDataset(Dataset):
 
     def __init__(self, *columns: Array):
         self.columns = columns
-        if not all(len(c) == len(columns[0]) for c in columns):
-            raise ValueError("All columns must have the same length")
         if len(columns) == 0:
             raise ValueError("At least one column is required")
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.columns[0])
 
-    def __getitem__(self, idx: int):
-        return tuple(c[idx] for c in self.columns)
+    def __getitem__(self, idx: int) -> tuple:
+        res_tuple = ()
+        for c in self.columns:
+            if idx >= len(c):
+                res_tuple += (None,)
+            else:
+                res_tuple += (c[idx],)
+
+        return res_tuple
