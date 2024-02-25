@@ -1,6 +1,6 @@
 # jaxonloader
 
-A dataloader, but for Jax
+A dataloader, but for JAX.
 
 The idea of this package is to have a DataLoader similar to the PyTorch one. To ensure that you don't have to learn anything new to use this package, the same API is chosen here (PyTorch's API actually a very good).
 
@@ -54,3 +54,26 @@ But - since you can get a dataset from a `DataFrame` - you can first
 transform your data and then pass it to the `from_dataframe` function.
 
 It's not ideal, but it works for now.
+
+--- 
+
+## Other backends
+
+Other backends are not supported and are not planned to be supported. There is already 
+a very good dataloader for PyTorch, and with all the support PyTorch has, it's not 
+needed to litter the world with yet another PyTorch dataloader. The same goes for TensorFlow as well.
+
+If you really need one, which supports all backends, check out 
+
+[jax-dataloader](https://github.com/BirkhoffG/jax-dataloader)
+
+which does pretty much the same thing as this package, but for all backends.
+
+## Then why does this package exist? 
+
+For one, I just like building things and don't really care if it's needed or not. Secondly,
+I don't care about other backends (as they are already very well supported) and only want to 
+focus on JAX and I needed a lightweight, easy-to-handle package, which loads data in JAX.
+
+So if you're like me and just need a simple dataloader for JAX, this package is for you.
+If you need a dataloader for all backends, check out the other package from the link above.
