@@ -12,6 +12,7 @@ class DataLoader:
     drop_last: bool
 
     _index: int
+    key: PRNGKeyArray | None
 
     def __init__(
         self,
@@ -39,13 +40,21 @@ class DataLoader:
 
         self._index = 0
 
+    def reset(self):
+        if self.shuffle and self.key is not None:
+            self.key, subkey = jax.random.split(self.key)
+            self.indices = jax.random.permutation(subkey, self.indices)
+        self._index = 0
+
     def __iter__(self):
         return self
 
     def __next__(self) -> Array | tuple[Array, ...]:
         if self.drop_last and self._index + self.batch_size > len(self.indices):
+            self.reset()
             raise StopIteration
         elif self._index >= len(self.indices):
+            self.reset()
             raise StopIteration
 
         batch_indices = self.indices[self._index : self._index + self.batch_size]
