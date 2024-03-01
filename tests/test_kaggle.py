@@ -1,5 +1,5 @@
 from jaxonloader import get_kaggle_dataset
-from jaxonloader.dataloader import JaxonDataLoader, make
+from jaxonloader.dataloader import make
 
 
 def test_heart_attack_analysis_dataset():
@@ -17,7 +17,3 @@ def test_heart_attack_analysis_dataset():
     x, state, breaking_cond = train_loader(state)
 
     assert x.shape == (4, 14)
-
-
-if __name__ == "__main__":
-    test_heart_attack_analysis_dataset()

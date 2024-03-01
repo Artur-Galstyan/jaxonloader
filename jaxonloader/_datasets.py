@@ -10,7 +10,6 @@ import polars as pl
 from jaxtyping import Array
 from loguru import logger
 
-from jaxonloader.dataloader import JaxonDataLoader
 from jaxonloader.dataset import JaxonDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
 
