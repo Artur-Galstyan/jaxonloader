@@ -32,7 +32,6 @@ jaxon_dataset = JaxonDataset(data)
 jaxon_dataloader, state = eqx.nn.make_with_state(JaxonDataLoader)(
     jaxon_dataset, batch_size=64, shuffle=True, key=subkey
 )
-
 jaxon_dataloader = eqx.filter_jit(jaxon_dataloader)
 start_time = time.time()
 print("Starting to iterate through training data...")

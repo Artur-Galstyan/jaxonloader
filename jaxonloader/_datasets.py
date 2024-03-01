@@ -10,7 +10,8 @@ import polars as pl
 from jaxtyping import Array
 from loguru import logger
 
-from jaxonloader.dataset import Dataset, StandardDataset
+from jaxonloader.dataloader import JaxonDataLoader
+from jaxonloader.dataset import JaxonDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
 
 
@@ -21,7 +22,7 @@ def get_kaggle_dataset(
     *,
     kaggle_json_path: str | None = None,
     combine_columns_to_row: bool = False,
-) -> list[Dataset]:
+) -> list[JaxonDataset]:
     """
     Get a dataset from Kaggle. You need to have the Kaggle
     API token in your home directory. Furthermore,
@@ -39,7 +40,7 @@ def get_kaggle_dataset(
         returned as a tuple.
 
     Returns:
-        A list of datasets. Each dataset is of class StandardDataset.
+        A list of datasets.
 
     Raises:
         FileNotFoundError: If the dataset is not found in Kaggle.
@@ -151,7 +152,7 @@ def get_kaggle_dataset_dataframes(
 
 
 @jaxonloader_cache(dataset_name="mnist")
-def get_mnist() -> tuple[Dataset, Dataset]:
+def get_mnist() -> tuple[JaxonDataset, JaxonDataset]:
     MNIST_TRAIN_URL = (
         "https://omnisium.eu-central-1.linodeobjects.com/mnist/mnist_train.csv.zip"
     )
@@ -190,8 +191,8 @@ def get_mnist() -> tuple[Dataset, Dataset]:
     x_test = jnp.array(test_df.drop("label").to_numpy())
     y_test = jnp.array(test_df["label"].to_numpy())
 
-    train_dataset = StandardDataset(x_train, y_train)
-    test_dataset = StandardDataset(x_test, y_test)
+    train_dataset = StandardJaxonDataset(x_train, y_train)
+    test_dataset = StandardJaxonDataset(x_test, y_test)
 
     return train_dataset, test_dataset
 
@@ -211,7 +212,9 @@ def get_fashion_mnist():
 @jaxonloader_cache(dataset_name="tinyshakespeare")
 def get_tiny_shakespeare(
     block_size: int = 8, train_ratio: float = 0.8
-) -> tuple[Dataset, Dataset, int, Callable[[str], Array], Callable[[Array], str]]:
+) -> tuple[
+    JaxonDataset, JaxonDataset, int, Callable[[str], Array], Callable[[Array], str]
+]:
     """
     Get the tiny shakespeare dataset from Andrej Karpathy's char-rnn repository.
 
@@ -236,7 +239,7 @@ def get_tiny_shakespeare(
     ```
     """
 
-    class MiniShakesPeare(Dataset):
+    class MiniShakesPeare(JaxonDataset):
         def __init__(self, data: Array, block_size: int = block_size) -> None:
             self.block_size = block_size
             self.data = data
@@ -303,9 +306,9 @@ def get_tiny_shakespeare(
 
 def from_dataframes(
     *dataframes: pl.DataFrame | pd.DataFrame, combine_columns_to_row: bool = False
-) -> list[Dataset]:
+) -> list[JaxonDataset]:
     """
-    Convert a list of polars.DataFrame (or pandas.DataFrame) to a list of Dataset.
+    Convert a list of polars.DataFrame (or pandas.DataFrame) to a list of JaxonDataset.
 
     Args:
         dataframes: A list of polars.DataFrame (or pandas.DataFrame).
@@ -314,16 +317,13 @@ def from_dataframes(
         returned as a tuple. Keyword-only argument.
 
     Returns:
-        A list of Dataset.
+        A list of JaxonDataset.
     """
-    datasets: list[Dataset] = []
+    datasets: list[JaxonDataset] = []
     for df in dataframes:
         dataframe: pl.DataFrame = (
             pl.from_pandas(df) if isinstance(df, pd.DataFrame) else df
         )
-        columns = [jnp.array(df[col].to_numpy()) for col in dataframe.columns]
-        datasets.append(
-            StandardDataset(*columns, combine_columns_to_row=combine_columns_to_row)
-        )
-
+        data = jnp.array(dataframe.to_numpy())
+        datasets.append(JaxonDataset(data))
     return datasets
