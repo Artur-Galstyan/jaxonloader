@@ -14,11 +14,6 @@ from jaxonloader.dataset import Dataset, StandardDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
 
 
-@jaxonloader_cache(dataset_name="huggingface")
-def get_huggingface_dataset():
-    raise NotImplementedError("get_huggingface_dataset is not implemented yet.")
-
-
 @jaxonloader_cache(dataset_name="kaggle")
 def get_kaggle_dataset(
     dataset_name: str,
