@@ -2,6 +2,12 @@
 
 A blazingly fast ⚡️ dataloader for JAX that no one asked for, but here it is anyway.
 
+## Performance
+
+<img width="676" alt="image" src="https://github.com/Artur-Galstyan/jaxonloader/assets/63471891/2953505e-d88f-4458-a66a-86053bee15b7">
+
+Benchmarked on a MacBook M1 Pro, `Jaxonloader` is around 31 times faster than PyTorch's Dataloader. See more at the end of the `README`.
+
 ## Installation
 
 Install this package using pip like so:
@@ -103,4 +109,49 @@ focus on JAX and I needed a lightweight, easy-to-handle package, which loads dat
 
 Also, the PyTorch dataloader is slow! To iterate over the MNIST training set, it takes
 on a MacBook M1 Pro around 2.83 seconds. Unjitted, the JAX dataloader takes 1.5 seconds and
-when jitted, it's around 0.09 seconds! This makes it around 31 times faster than the PyTorch dataloader.
+when jitted, it's around 0.09 seconds! This makes it around 31 times faster than the PyTorch dataloader. 
+
+The performance test script was this:
+
+```python
+
+import time
+
+import jax
+import jax.numpy as jnp
+from jaxonloader import make
+from jaxonloader.dataset import JaxonDataset
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+
+
+transform = transforms.Compose(
+    [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
+)
+dataset1 = datasets.MNIST("../data", train=True, download=True, transform=transform)
+train_loader = DataLoader(dataset1, batch_size=64, shuffle=True)
+print("Starting to iterate through training data...")
+start_time = time.time()
+for data in train_loader:
+    pass
+end_time = time.time()
+print(f"Time to iterate through training data: {end_time - start_time:.2f} seconds")
+
+key = jax.random.PRNGKey(0)
+key, subkey = jax.random.split(key)
+
+data = jnp.zeros(shape=(len(dataset1), 784))
+jaxon_dataset = JaxonDataset(data)
+
+jaxon_dataloader, state = make(
+    jaxon_dataset, batch_size=64, shuffle=True, key=subkey, jit=True
+)
+start_time = time.time()
+print("Starting to iterate through training data...")
+while it := jaxon_dataloader(state):
+    x, state, done = it
+    if done:
+        break
+
+print(f"Time to iterate through training data: {time.time() - start_time:.2f} seconds")
+```
