@@ -1,6 +1,6 @@
 # Jaxonloader
 
-A blazingly fast dataloader for JAX that no one asked for, but here it is anyway.
+A blazingly fast ⚡️ dataloader for JAX that no one asked for, but here it is anyway.
 
 ## Installation
 
@@ -35,7 +35,6 @@ train_loader, index = make(
     key=key,
     jit=True
 )
-train_loader = jax.jit(train_loader)
 while x:= train_loader(index):
     data, index, done = x
     processed_data = process_data(data)
