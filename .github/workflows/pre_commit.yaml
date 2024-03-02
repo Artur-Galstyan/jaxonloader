@@ -13,5 +13,5 @@ jobs:
       - name: Install everything
         run: pip install -e .
       - name: Run pre-commit
-        run: python3 -m pre-commit run --all-files
+        run: python3 -m pre_commit run --all-files
 
