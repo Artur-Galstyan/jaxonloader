@@ -1,24 +1,20 @@
-import jax
+import equinox as eqx
 from jaxonloader import get_mnist
-from jaxonloader.dataloader import DataLoader
+from jaxonloader.dataloader import make
 
 
 def test_mnist():
-    key = jax.random.PRNGKey(0)
-
     train, test = get_mnist()
-    assert len(train) == 60000
-    assert len(test) == 10000
 
-    train_loader = DataLoader(
+    train_loader, index = make(
         train,
-        batch_size=4,
-        shuffle=False,
+        batch_size=64,
         drop_last=True,
-        key=key,
     )
-    x = next(iter(train_loader))
-    assert x[0].shape == (4, 784)
-    assert x[1].shape == (4,)
+    train_loader = eqx.filter_jit(train_loader)
+    x, _, _ = train_loader(index)
+    assert x.shape == (64, 785)
 
-    assert x[1][0] == 5
+
+if __name__ == "__main__":
+    test_mnist()

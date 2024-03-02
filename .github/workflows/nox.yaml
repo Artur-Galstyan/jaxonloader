@@ -1,0 +1,21 @@
+name: nox
+
+on: [push, pull_request]
+
+jobs:
+  nox:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Set up Kaggle API credentials
+        run: |
+          mkdir -p $HOME/.kaggle
+          echo '${{ secrets.KAGGLE_TOKEN }}' > $HOME/.kaggle/kaggle.json
+          chmod 600 $HOME/.kaggle/kaggle.json
+      - name: Install nox
+        run: pip install nox
+      - name: Run nox
+        run: nox

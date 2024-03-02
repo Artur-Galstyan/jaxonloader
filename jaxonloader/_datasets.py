@@ -10,13 +10,8 @@ import polars as pl
 from jaxtyping import Array
 from loguru import logger
 
-from jaxonloader.dataset import Dataset, StandardDataset
+from jaxonloader.dataset import JaxonDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
-
-
-@jaxonloader_cache(dataset_name="huggingface")
-def get_huggingface_dataset():
-    raise NotImplementedError("get_huggingface_dataset is not implemented yet.")
 
 
 @jaxonloader_cache(dataset_name="kaggle")
@@ -26,7 +21,7 @@ def get_kaggle_dataset(
     *,
     kaggle_json_path: str | None = None,
     combine_columns_to_row: bool = False,
-) -> list[Dataset]:
+) -> list[JaxonDataset]:
     """
     Get a dataset from Kaggle. You need to have the Kaggle
     API token in your home directory. Furthermore,
@@ -44,7 +39,7 @@ def get_kaggle_dataset(
         returned as a tuple.
 
     Returns:
-        A list of datasets. Each dataset is of class StandardDataset.
+        A list of datasets.
 
     Raises:
         FileNotFoundError: If the dataset is not found in Kaggle.
@@ -156,7 +151,7 @@ def get_kaggle_dataset_dataframes(
 
 
 @jaxonloader_cache(dataset_name="mnist")
-def get_mnist() -> tuple[Dataset, Dataset]:
+def get_mnist() -> tuple[JaxonDataset, JaxonDataset]:
     MNIST_TRAIN_URL = (
         "https://omnisium.eu-central-1.linodeobjects.com/mnist/mnist_train.csv.zip"
     )
@@ -189,14 +184,11 @@ def get_mnist() -> tuple[Dataset, Dataset]:
     train_df = pl.read_csv(data_path / "mnist_train.csv")
     test_df = pl.read_csv(data_path / "mnist_test.csv")
 
-    x_train = jnp.array(train_df.drop("label").to_numpy())
-    y_train = jnp.array(train_df["label"].to_numpy())
+    x_train = jnp.array(train_df.to_numpy())
+    x_test = jnp.array(test_df.to_numpy())
 
-    x_test = jnp.array(test_df.drop("label").to_numpy())
-    y_test = jnp.array(test_df["label"].to_numpy())
-
-    train_dataset = StandardDataset(x_train, y_train)
-    test_dataset = StandardDataset(x_test, y_test)
+    train_dataset = JaxonDataset(x_train)
+    test_dataset = JaxonDataset(x_test)
 
     return train_dataset, test_dataset
 
@@ -216,7 +208,9 @@ def get_fashion_mnist():
 @jaxonloader_cache(dataset_name="tinyshakespeare")
 def get_tiny_shakespeare(
     block_size: int = 8, train_ratio: float = 0.8
-) -> tuple[Dataset, Dataset, int, Callable[[str], Array], Callable[[Array], str]]:
+) -> tuple[
+    JaxonDataset, JaxonDataset, int, Callable[[str], Array], Callable[[Array], str]
+]:
     """
     Get the tiny shakespeare dataset from Andrej Karpathy's char-rnn repository.
 
@@ -232,7 +226,6 @@ def get_tiny_shakespeare(
         - encoder: A function that encodes a string into a sequence of integers.
         - decoder: A function that decodes a sequence of integers into a string.
 
-
     Example:
     ```python
     from jaxonloader import get_tiny_shakespeare
@@ -240,31 +233,6 @@ def get_tiny_shakespeare(
     train_dataset, test_dataset, vocab_size, encoder, decoder = get_tiny_shakespeare()
     ```
     """
-
-    class MiniShakesPeare(Dataset):
-        def __init__(self, data: Array, block_size: int = block_size) -> None:
-            self.block_size = block_size
-            self.data = data
-
-        def __len__(self):
-            return len(self.data)
-
-        def __getitem__(self, index: int):
-            if index == -1:
-                index = len(self.data) - 1
-            x = self.data[index : index + self.block_size]
-            y = self.data[index + 1 : index + self.block_size + 1]
-
-            if index + self.block_size + 1 > len(self.data):
-                diff = index + self.block_size + 1 - len(self.data)
-
-                to_add_on_x = diff - 1
-                to_add_on_y = diff
-
-                x = jnp.concatenate((x, self.data[:to_add_on_x]))
-                y = jnp.concatenate((y, self.data[:to_add_on_y]))
-
-            return x, y
 
     def get_text():
         data_path = pathlib.Path(JAXONLOADER_PATH) / "tinyshakespeare/"
@@ -297,20 +265,28 @@ def get_tiny_shakespeare(
     data = jnp.array(encode(text))
     n = int(train_ratio * len(data))
 
-    train_data = data[:n]
-    test_data = data[n:]
+    x_train = data[:n]
+    remainder = len(x_train) % block_size
+    x_train = x_train[:-remainder].reshape(-1, block_size)
+    y_train = jnp.roll(x_train, -1)
+    train_data = jnp.concatenate(arrays=(x_train, y_train), axis=1)
+    train_dataset = JaxonDataset(train_data)
 
-    train_dataset = MiniShakesPeare(train_data, block_size=block_size)
-    test_dataset = MiniShakesPeare(test_data, block_size=block_size)
+    x_test = data[n:]
+    remainder = len(x_test) % block_size
+    x_test = x_test[:-remainder].reshape(-1, block_size)
+    y_test = jnp.roll(x_test, -1)
+    test_data = jnp.concatenate(arrays=(x_test, y_test), axis=1)
+    test_dataset = JaxonDataset(test_data)
 
     return train_dataset, test_dataset, vocab_size, encoder, decoder
 
 
 def from_dataframes(
     *dataframes: pl.DataFrame | pd.DataFrame, combine_columns_to_row: bool = False
-) -> list[Dataset]:
+) -> list[JaxonDataset]:
     """
-    Convert a list of polars.DataFrame (or pandas.DataFrame) to a list of Dataset.
+    Convert a list of polars.DataFrame (or pandas.DataFrame) to a list of JaxonDataset.
 
     Args:
         dataframes: A list of polars.DataFrame (or pandas.DataFrame).
@@ -319,16 +295,13 @@ def from_dataframes(
         returned as a tuple. Keyword-only argument.
 
     Returns:
-        A list of Dataset.
+        A list of JaxonDataset.
     """
-    datasets: list[Dataset] = []
+    datasets: list[JaxonDataset] = []
     for df in dataframes:
         dataframe: pl.DataFrame = (
             pl.from_pandas(df) if isinstance(df, pd.DataFrame) else df
         )
-        columns = [jnp.array(df[col].to_numpy()) for col in dataframe.columns]
-        datasets.append(
-            StandardDataset(*columns, combine_columns_to_row=combine_columns_to_row)
-        )
-
+        data = jnp.array(dataframe.to_numpy())
+        datasets.append(JaxonDataset(data))
     return datasets
