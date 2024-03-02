@@ -19,9 +19,8 @@ a minimum example to setup MNIST:
 ```python
 
 import jax
+from jaxonloader import get_mnist, make
 
-from jaxonloader import get_mnist
-from jaxonloader import make
 key = jax.random.PRNGKey(0)
 
 train, test = get_mnist()
@@ -30,7 +29,7 @@ train, test = get_mnist()
 train_loader, index = make(
     train,
     batch_size=4,
-    shuffle=False,
+    shuffle=True,
     drop_last=True,
     key=key,
     jit=True
