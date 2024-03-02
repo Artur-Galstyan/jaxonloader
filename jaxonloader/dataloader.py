@@ -38,19 +38,17 @@ class JaxonDataLoader(eqx.Module):
         self.indices = indices
         self.index = eqx.nn.StateIndex(jnp.array(0))
 
-    def __call__(self, state: eqx.nn.State) -> tuple[Array, eqx.nn.State, bool] | None:
-        index = state.get(self.index)
+    def __call__(self, index: eqx.nn.State) -> tuple[Array, eqx.nn.State, bool]:
+        idx = index.get(self.index)
         break_condition = (
-            self.drop_last and index + self.batch_size > len(self.indices)
-        ) or index >= len(self.indices)
+            self.drop_last and idx + self.batch_size > len(self.indices)
+        ) or idx >= len(self.indices)
 
         n_samples, n_dims = self.dataset.data.shape
-        batch_indices = jax.lax.dynamic_slice_in_dim(
-            self.indices, index, self.batch_size
-        )
+        batch_indices = jax.lax.dynamic_slice_in_dim(self.indices, idx, self.batch_size)
         batch = jax.vmap(lambda i: self.dataset(i))(batch_indices)
-        new_state = state.set(self.index, index + self.batch_size)
-        return batch, new_state, break_condition
+        new_index = index.set(self.index, idx + self.batch_size)
+        return batch, new_index, break_condition
 
     def __len__(self) -> int:
         if self.drop_last:

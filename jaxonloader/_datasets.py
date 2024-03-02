@@ -190,8 +190,8 @@ def get_mnist() -> tuple[JaxonDataset, JaxonDataset]:
     x_test = jnp.array(test_df.drop("label").to_numpy())
     y_test = jnp.array(test_df["label"].to_numpy())
 
-    train_dataset = StandardJaxonDataset(x_train, y_train)
-    test_dataset = StandardJaxonDataset(x_test, y_test)
+    train_dataset = JaxonDataset(jnp.append(x_train, y_train))
+    test_dataset = JaxonDataset(jnp.append(x_test, y_test))
 
     return train_dataset, test_dataset
 
@@ -229,7 +229,6 @@ def get_tiny_shakespeare(
         - encoder: A function that encodes a string into a sequence of integers.
         - decoder: A function that decodes a sequence of integers into a string.
 
-
     Example:
     ```python
     from jaxonloader import get_tiny_shakespeare
@@ -237,31 +236,6 @@ def get_tiny_shakespeare(
     train_dataset, test_dataset, vocab_size, encoder, decoder = get_tiny_shakespeare()
     ```
     """
-
-    class MiniShakesPeare(JaxonDataset):
-        def __init__(self, data: Array, block_size: int = block_size) -> None:
-            self.block_size = block_size
-            self.data = data
-
-        def __len__(self):
-            return len(self.data)
-
-        def __getitem__(self, index: int):
-            if index == -1:
-                index = len(self.data) - 1
-            x = self.data[index : index + self.block_size]
-            y = self.data[index + 1 : index + self.block_size + 1]
-
-            if index + self.block_size + 1 > len(self.data):
-                diff = index + self.block_size + 1 - len(self.data)
-
-                to_add_on_x = diff - 1
-                to_add_on_y = diff
-
-                x = jnp.concatenate((x, self.data[:to_add_on_x]))
-                y = jnp.concatenate((y, self.data[:to_add_on_y]))
-
-            return x, y
 
     def get_text():
         data_path = pathlib.Path(JAXONLOADER_PATH) / "tinyshakespeare/"
@@ -294,11 +268,19 @@ def get_tiny_shakespeare(
     data = jnp.array(encode(text))
     n = int(train_ratio * len(data))
 
-    train_data = data[:n]
-    test_data = data[n:]
+    x_train = data[:n]
+    remainder = len(x_train) % block_size
+    x_train = x_train[:-remainder].reshape(-1, block_size)
+    y_train = jnp.roll(x_train, -1)
+    train_data = jnp.concatenate(arrays=(x_train, y_train), axis=1)
+    train_dataset = JaxonDataset(train_data)
 
-    train_dataset = MiniShakesPeare(train_data, block_size=block_size)
-    test_dataset = MiniShakesPeare(test_data, block_size=block_size)
+    x_test = data[n:]
+    remainder = len(x_test) % block_size
+    x_test = x_test[:-remainder].reshape(-1, block_size)
+    y_test = jnp.roll(x_test, -1)
+    test_data = jnp.concatenate(arrays=(x_test, y_test), axis=1)
+    test_dataset = JaxonDataset(test_data)
 
     return train_dataset, test_dataset, vocab_size, encoder, decoder
 

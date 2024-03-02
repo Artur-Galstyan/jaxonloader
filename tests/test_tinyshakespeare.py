@@ -1,10 +1,10 @@
 import jax
 from jaxonloader import get_tiny_shakespeare
-from jaxonloader.dataloader import DataLoader
+from jaxonloader.dataloader import make
 
 
 def test_mnist():
-    batch_size = 32
+    batch_size = 4
     block_size = 8
     key = jax.random.PRNGKey(0)
 
@@ -13,15 +13,13 @@ def test_mnist():
         train_ratio=0.8,
     )
 
-    train_loader = DataLoader(
+    train_loader, index = make(
         train,
         batch_size=batch_size,
         shuffle=True,
         drop_last=True,
         key=key,
     )
+    x, index, breaking_cond = train_loader(index)
 
-    first_batch = next(iter(train_loader))
-    assert len(first_batch) == 2
-    assert first_batch[0].shape == (batch_size, block_size)
-    assert first_batch[1].shape == (batch_size, block_size)
+    assert x.shape == (batch_size, block_size * 2)

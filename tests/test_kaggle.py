@@ -8,12 +8,12 @@ def test_heart_attack_analysis_dataset():
     )
     first_dataset, second_dataset = datasets
 
-    train_loader, state = make(
+    train_loader, index = make(
         first_dataset,
         batch_size=4,
         shuffle=False,
         drop_last=True,
     )
-    x, state, breaking_cond = train_loader(state)
+    x, state, breaking_cond = train_loader(index)
 
     assert x.shape == (4, 14)
