@@ -1,10 +1,9 @@
-
-name: Pre-commit
+name: nox
 
 on: [push, pull_request]
 
 jobs:
-  pre-commit:
+  nox:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
