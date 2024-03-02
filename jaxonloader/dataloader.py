@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 import equinox as eqx
 import jax
 import jax.numpy as jnp
@@ -75,7 +77,13 @@ def make(
     shuffle: bool = False,
     drop_last: bool = False,
     key: PRNGKeyArray | None = None,
-) -> tuple[JaxonDataLoader, eqx.nn.State]:
-    return eqx.nn.make_with_state(JaxonDataLoader)(
+    jit: bool = True,
+) -> (
+    tuple[Callable[[eqx.nn.State], tuple[Array, eqx.nn.State, bool]], eqx.nn.State]
+    | tuple[JaxonDataLoader, eqx.nn.State]
+):
+    dataloader, index = eqx.nn.make_with_state(JaxonDataLoader)(
         dataset, batch_size, shuffle, drop_last, key=key
     )
+    dataloader = eqx.filter_jit(dataloader) if jit else dataloader
+    return dataloader, index

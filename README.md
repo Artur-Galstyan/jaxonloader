@@ -1,12 +1,6 @@
-# jaxonloader
+# Jaxonloader
 
-A dataloader, but for JAX.
-
-The idea of this package is to have a DataLoader similar to the PyTorch one. To ensure that you don't have to learn anything new to use this package, the same API is chosen here (PyTorch's API actually a very good).
-
-Unfortunately, this also means that this package does _not_ follow the functional programming paradigm, because neither does the PyTorch DataLoader API. While in that regard this DataLoader is not _functional_ per se, it still allows for reproducability since you provide a random key to shuffle the data (if you want to).
-
-At the moment, this package is not yet a 1:1 mapping from PyTorch's DataLoader, but one day, it will be! \**holding up arm and clenching fist\**
+A blazingly fast dataloader for JAX that no one asked for, but here it is anyway.
 
 ## Installation
 
@@ -16,64 +10,99 @@ Install this package using pip like so:
 pip install jaxonloader
 ```
 
-## Usage
+## Quickstart
 
-Pretty much exactly as you would use PyTorch's DataLoader. Create a dataset class by inheriting from the `jaxonloader` dataset and implement the `__len__` and `__getitem__` functions. Then simply pass that to the DataLoader class as argument.
-
-On the other hand, you can also use some of the provided datasets, such as the MNIST dataset.
+This package differs significantly from the PyTorch `DataLoader` class! In JAX,
+there is no internal state, which means we have to keep track of it ourselves. Here's
+a minimum example to setup MNIST:
 
 ```python
 
 import jax
 
 from jaxonloader import get_mnist
-from jaxonloader.dataloader import DataLoader
+from jaxonloader import make
 key = jax.random.PRNGKey(0)
 
 train, test = get_mnist()
+# these are JaxonDatasets
 
-train_loader = DataLoader(
+train_loader, index = make(
     train,
     batch_size=4,
     shuffle=False,
     drop_last=True,
     key=key,
+    jit=True
 )
-x = next(iter(train_loader))
-print(x[0].shape) # (4, 784)
-print(x[1].shape) # (4,)
-
+train_loader = jax.jit(train_loader)
+while x:= train_loader(index):
+    data, index, done = x
+    processed_data = process_data(data)
+    if done:
+        break
 
 ```
 
-## Performing Transformations
+## Philosophy
 
-As of now, transformations are not supported :(
+The `jaxonloader` package is designed to be as lightweight as possible. In fact, it's
+only a very thin wrapper around JAX arrays! Under the hood, it's using
+the [Equinox library](https://github.com/Patrick-Kidger/equinox) to handle the
+stateful nature of the dataloader. Since the dataloader object is just a `eqx.Module`, it
+can be JITted and can be used in other JAX transformations as well (although, I haven't tested this).
 
-But - since you can get a dataset from a `DataFrame` - you can first 
-transform your data and then pass it to the `from_dataframe` function.
+## Label & Target Handling
 
-It's not ideal, but it works for now.
+Due to it's lightweight nature, this package - as of now - doesn't perform any kinds of transformations. This means that you will have to transform your data first and then pass them to the dataloader. 
+This also goes for post-processing the data. 
 
---- 
+While in PyTorch, you would do something like this:
+
+```python 
+
+for x, y in train_dataloader:
+    # do something with x and y
+
+```
+
+In Jaxonloader, we don't split the row of the dataset into `x` and `y` and instead 
+simply return the whole row. This means that you will have to do the splitting (i.e. data post-processing) yourself. 
+
+```python
+# MNIST example
+while x:= train_loader(index):
+    data, index, done = x
+    print(data.shape) # (4, 785)
+    x, y = data[:, :-1], data[:, -1] # split the data into x and y
+
+    # do something with x and y
+```
+
+## Roadmap
+
+The goal is to keep this package as lightweight as possible, while also providing as 
+many datasets as possible. The next steps are to gather as many datasets as possible 
+and to provide a simple API to load them.
+
+---
 
 ## Other backends
 
-Other backends are not supported and are not planned to be supported. There is already 
-a very good dataloader for PyTorch, and with all the support PyTorch has, it's not 
+Other backends are not supported and are not planned to be supported. There is already
+a very good dataloader for PyTorch, and with all the support PyTorch has, it's not
 needed to litter the world with yet another PyTorch dataloader. The same goes for TensorFlow as well.
 
-If you really need one, which supports all backends, check out 
+If you really need one, which supports all backends, check out
 
 [jax-dataloader](https://github.com/BirkhoffG/jax-dataloader)
 
-which does pretty much the same thing as this package, but for all backends.
-
-## Then why does this package exist? 
+## Then why does this package exist?
 
 For one, I just like building things and don't really care if it's needed or not. Secondly,
-I don't care about other backends (as they are already very well supported) and only want to 
+I don't care about other backends (as they are already very well supported) and only want to
 focus on JAX and I needed a lightweight, easy-to-handle package, which loads data in JAX.
 
-So if you're like me and just need a simple dataloader for JAX, this package is for you.
-If you need a dataloader for all backends, check out the other package from the link above.
+Also, the PyTorch dataloader is slow! To iterate over the MNIST training set, it takes
+on a MacBook M1 Pro around 2.83 seconds. Unjitted, the JAX dataloader takes 1.5 seconds and
+when jitted, it's around 0.09 seconds! This makes it around 31 times faster than the PyTorch dataloader.
