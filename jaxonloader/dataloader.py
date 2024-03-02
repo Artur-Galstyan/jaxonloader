@@ -40,9 +40,16 @@ class JaxonDataLoader(eqx.Module):
 
     def __call__(self, index: eqx.nn.State) -> tuple[Array, eqx.nn.State, bool]:
         idx = index.get(self.index)
-        break_condition = (
-            self.drop_last and idx + self.batch_size > len(self.indices)
-        ) or idx >= len(self.indices)
+        to_subtract_from_indices = jax.lax.cond(
+            self.drop_last,
+            lambda: jax.lax.rem(len(self.indices), self.batch_size),
+            lambda: 0,
+        )
+        break_condition = jax.lax.cond(
+            idx >= len(self.indices) - to_subtract_from_indices,
+            lambda: True,
+            lambda: False,
+        )
 
         n_samples, n_dims = self.dataset.data.shape
         batch_indices = jax.lax.dynamic_slice_in_dim(self.indices, idx, self.batch_size)
@@ -65,8 +72,8 @@ class JaxonDataLoader(eqx.Module):
 def make(
     dataset: JaxonDataset,
     batch_size: int,
-    shuffle: bool,
-    drop_last: bool,
+    shuffle: bool = False,
+    drop_last: bool = False,
     key: PRNGKeyArray | None = None,
 ) -> tuple[JaxonDataLoader, eqx.nn.State]:
     return eqx.nn.make_with_state(JaxonDataLoader)(

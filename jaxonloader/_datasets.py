@@ -184,14 +184,11 @@ def get_mnist() -> tuple[JaxonDataset, JaxonDataset]:
     train_df = pl.read_csv(data_path / "mnist_train.csv")
     test_df = pl.read_csv(data_path / "mnist_test.csv")
 
-    x_train = jnp.array(train_df.drop("label").to_numpy())
-    y_train = jnp.array(train_df["label"].to_numpy())
+    x_train = jnp.array(train_df.to_numpy())
+    x_test = jnp.array(test_df.to_numpy())
 
-    x_test = jnp.array(test_df.drop("label").to_numpy())
-    y_test = jnp.array(test_df["label"].to_numpy())
-
-    train_dataset = JaxonDataset(jnp.append(x_train, y_train))
-    test_dataset = JaxonDataset(jnp.append(x_test, y_test))
+    train_dataset = JaxonDataset(x_train)
+    test_dataset = JaxonDataset(x_test)
 
     return train_dataset, test_dataset
 
