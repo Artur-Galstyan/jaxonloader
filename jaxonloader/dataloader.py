@@ -1,10 +1,15 @@
+from collections.abc import Callable
+
 import equinox as eqx
 import jax
 import jax.numpy as jnp
 from jaxtyping import Array, PRNGKeyArray
 
-from jaxonloader import JITJaxonDataLoader
 from jaxonloader.dataset import JaxonDataset
+
+
+Index = eqx.nn.State
+JITJaxonDataLoader = Callable[[eqx.nn.State], tuple[Array, eqx.nn.State, bool]]
 
 
 class JaxonDataLoader(eqx.Module):
