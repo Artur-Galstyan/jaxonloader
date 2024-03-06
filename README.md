@@ -89,7 +89,7 @@ The goal is to keep this package as lightweight as possible, while also providin
 many datasets as possible. The next steps are to gather as many datasets as possible 
 and to provide a simple API to load them.
 
----
+If you have any datasets you want to see in here, just create an issue and I will look into it :)
 
 ## Other backends
 
