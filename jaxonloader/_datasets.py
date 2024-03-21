@@ -14,10 +14,12 @@ from jaxonloader.dataset import JaxonDataset
 from jaxonloader.utils import deprecation_warning, jaxonloader_cache, JAXONLOADER_PATH
 
 
-@deprecation_warning("""
+@deprecation_warning(
+    """
     Kaggle datasets won't be supported in the future.
     Consider creating your dataset and then using the `from_dataframes` function.
-""")
+"""
+)
 @jaxonloader_cache(dataset_name="kaggle")
 def get_kaggle_dataset(
     dataset_name: str,
@@ -60,10 +62,12 @@ def get_kaggle_dataset(
     return from_dataframes(*dataframes, combine_columns_to_row=combine_columns_to_row)
 
 
-@deprecation_warning("""
+@deprecation_warning(
+    """
     Kaggle datasets won't be supported in the future.
     Consider creating your dataset and then using the `from_dataframes` function.
-""")
+"""
+)
 @jaxonloader_cache(dataset_name="kaggle")
 def get_kaggle_dataset_dataframes(
     dataset_name: str,
