@@ -18,4 +18,4 @@ Yes. Do you really need more than that?
 
 Since we can JIT the dataloader, we can have a 31x increase in iteration time over the PyTorch dataloader.
 
-![Performance](/images/performance.png)
+![Performance](images/performance.png)
