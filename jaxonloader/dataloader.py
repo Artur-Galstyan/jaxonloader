@@ -82,7 +82,7 @@ def make(
     drop_last: bool = False,
     key: PRNGKeyArray | None = None,
     jit: bool = True,
-) -> tuple[JITJaxonDataLoader, eqx.nn.State] | tuple[JaxonDataLoader, eqx.nn.State]:
+) -> tuple[JITJaxonDataLoader, Index] | tuple[JaxonDataLoader, Index]:
     dataloader, index = eqx.nn.make_with_state(JaxonDataLoader)(
         dataset, batch_size, shuffle, drop_last, key=key
     )

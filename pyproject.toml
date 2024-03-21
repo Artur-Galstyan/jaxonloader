@@ -14,18 +14,21 @@ dependencies=[
   "jaxtyping",
   "equinox",
   "tqdm",
-  "beartype",
   "polars",
   "typing_extensions",
-  "pre-commit",
   "loguru",
-  "nox",
-  "pytest",
   "kaggle",
   "pandas",
   "pyarrow",
-  
 ]
+[project.optional-dependencies]
+dev = [
+    "nox",
+    "pre-commit",
+    "pytest",
+    "mkdocs",
+]
+
 
 
 [tool.ruff]

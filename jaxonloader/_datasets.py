@@ -11,9 +11,13 @@ from jaxtyping import Array
 from loguru import logger
 
 from jaxonloader.dataset import JaxonDataset
-from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
+from jaxonloader.utils import deprecation_warning, jaxonloader_cache, JAXONLOADER_PATH
 
 
+@deprecation_warning("""
+    Kaggle datasets won't be supported in the future.
+    Consider creating your dataset and then using the `from_dataframes` function.
+""")
 @jaxonloader_cache(dataset_name="kaggle")
 def get_kaggle_dataset(
     dataset_name: str,
@@ -56,6 +60,10 @@ def get_kaggle_dataset(
     return from_dataframes(*dataframes, combine_columns_to_row=combine_columns_to_row)
 
 
+@deprecation_warning("""
+    Kaggle datasets won't be supported in the future.
+    Consider creating your dataset and then using the `from_dataframes` function.
+""")
 @jaxonloader_cache(dataset_name="kaggle")
 def get_kaggle_dataset_dataframes(
     dataset_name: str,
@@ -282,6 +290,24 @@ def get_tiny_shakespeare(
     return train_dataset, test_dataset, vocab_size, encoder, decoder
 
 
+def from_dataframe(dataframe: pl.DataFrame | pd.DataFrame) -> JaxonDataset:
+    """
+    Convert a polars.DataFrame (or pandas.DataFrame) to a JaxonDataset.
+
+    Args:
+    dataframe: A polars.DataFrame (or pandas.DataFrame).
+
+    Returns:
+    A JaxonDataset.
+    """
+
+    df: pl.DataFrame = (
+        pl.from_pandas(dataframe) if isinstance(dataframe, pd.DataFrame) else dataframe
+    )
+    data = jnp.array(df.to_numpy())
+    return JaxonDataset(data)
+
+
 def from_dataframes(
     *dataframes: pl.DataFrame | pd.DataFrame, combine_columns_to_row: bool = False
 ) -> list[JaxonDataset]:
@@ -292,7 +318,7 @@ def from_dataframes(
         dataframes: A list of polars.DataFrame (or pandas.DataFrame).
         combine_columns_to_row: Whether to combine the columns to a single row. If
         True, the columns are concatenated to a single row. If False, the columns are
-        returned as a tuple. Keyword-only argument.
+        returned as a tuple.
 
     Returns:
         A list of JaxonDataset.

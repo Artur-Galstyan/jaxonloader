@@ -3,6 +3,8 @@ import pathlib
 from functools import wraps
 from typing import Any
 
+from loguru import logger
+
 
 JAXONLOADER_PATH = pathlib.Path.home() / ".jaxonloader"
 
@@ -24,6 +26,18 @@ def jaxonloader_cache(dataset_name: str) -> Any:
         def wrapper(*args: Any, **kwargs: Any):
             _make_jaxonloader_dir_if_not_exists()
             _make_data_dir_if_not_exists(dataset_name)
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+def deprecation_warning(message: str) -> Any:
+    def decorator(func: Any) -> Any:
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any):
+            logger.warning(message)
             return func(*args, **kwargs)
 
         return wrapper
