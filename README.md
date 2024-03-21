@@ -8,6 +8,10 @@ A blazingly fast ⚡️ dataloader for JAX that no one asked for, but here it is
 
 Benchmarked on a MacBook M1 Pro, `Jaxonloader` is around 31 times faster than PyTorch's Dataloader. See more at the end of the `README`.
 
+## Documentation
+
+Check out the docs [here](https://artur-galstyan.github.io/jaxonloader/)
+
 ## Installation
 
 Install this package using pip like so:
