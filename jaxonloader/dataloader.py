@@ -60,7 +60,15 @@ class JaxonDataLoader(eqx.Module):
         n_samples, n_dims = self.dataset.data.shape
         batch_indices = jax.lax.dynamic_slice_in_dim(self.indices, idx, self.batch_size)
         batch = jax.vmap(lambda i: self.dataset(i))(batch_indices)
-        new_index = index.set(self.index, idx + self.batch_size)
+
+        new_index_value = jax.lax.cond(
+            break_condition,
+            lambda: 0,
+            lambda: idx + self.batch_size,
+        )
+
+        new_index = index.set(self.index, new_index_value)
+
         return batch, new_index, break_condition
 
     def __len__(self) -> int:
