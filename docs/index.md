@@ -13,9 +13,3 @@ In essence, Jaxonloader is simply a very thin layer around a JAX array. The idea
 ### So all you're doing is iterating over a JAX array?
 
 Yes. Do you really need more than that?
-
-### I guess you're right. ...Wait it's faster? How much?
-
-Since we can JIT the dataloader, we can have a 31x increase in iteration time over the PyTorch dataloader.
-
-![Performance](images/performance.png)
