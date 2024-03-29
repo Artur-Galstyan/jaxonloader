@@ -4,6 +4,7 @@ from functools import wraps
 from typing import Any
 
 from loguru import logger
+from numpy.random import default_rng
 
 
 JAXONLOADER_PATH = pathlib.Path.home() / ".jaxonloader"
@@ -43,3 +44,7 @@ def deprecation_warning(message: str) -> Any:
         return wrapper
 
     return decorator
+
+
+def get_rng(seed: int | None) -> Any:
+    return default_rng(seed) if seed is not None else default_rng()

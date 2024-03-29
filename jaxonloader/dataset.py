@@ -1,18 +1,24 @@
-import equinox as eqx
-from jaxtyping import Array
+from abc import ABC, abstractmethod
+
+from numpy.typing import NDArray
 
 
-class JaxonDataset(eqx.Module):
-    data: Array
+class JaxonDataset(ABC):
+    @abstractmethod
+    def __len__(self) -> int:
+        raise NotImplementedError()
 
-    def __init__(self, data: Array):
+    @abstractmethod
+    def __getitem__(self, idx: NDArray) -> NDArray:
+        raise NotImplementedError()
+
+
+class SingleArrayDataset(JaxonDataset):
+    def __init__(self, data: NDArray):
         self.data = data
 
     def __len__(self) -> int:
         return len(self.data)
 
-    def __call__(self, idx: int) -> Array:
+    def __getitem__(self, idx: NDArray) -> NDArray:
         return self.data[idx]
-
-    def __getitem__(self, idx: int) -> Array:
-        return self(idx)
