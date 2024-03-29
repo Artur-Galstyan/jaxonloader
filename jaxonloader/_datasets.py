@@ -4,9 +4,11 @@ import urllib.request
 import zipfile
 from collections.abc import Callable
 
+import jax
 import jax.numpy as jnp
 import pandas as pd
 import polars as pl
+from jax import device_put
 from jaxtyping import Array
 from loguru import logger
 
@@ -274,7 +276,7 @@ def get_tiny_shakespeare(
 
     encoder = encode
     decoder = decode
-    data = jnp.array(encode(text))
+    data = device_put(jnp.array(encode(text)), jax.devices("cpu"))
     n = int(train_ratio * len(data))
 
     x_train = data[:n]
@@ -308,7 +310,7 @@ def from_dataframe(dataframe: pl.DataFrame | pd.DataFrame) -> JaxonDataset:
     df: pl.DataFrame = (
         pl.from_pandas(dataframe) if isinstance(dataframe, pd.DataFrame) else dataframe
     )
-    data = jnp.array(df.to_numpy())
+    data = device_put(jnp.array(df.to_numpy()), jax.devices("cpu"))
     return JaxonDataset(data)
 
 
@@ -332,6 +334,6 @@ def from_dataframes(
         dataframe: pl.DataFrame = (
             pl.from_pandas(df) if isinstance(df, pd.DataFrame) else df
         )
-        data = jnp.array(dataframe.to_numpy())
+        data = device_put(jnp.array(dataframe.to_numpy()), jax.devices("cpu"))
         datasets.append(JaxonDataset(data))
     return datasets
