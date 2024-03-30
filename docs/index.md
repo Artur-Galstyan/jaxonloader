@@ -1,15 +1,15 @@
 # Jaxonloader
 
-A blazingly fast ⚡️ dataloader for JAX that no one asked for, but here it is anyway.
+A dataloader that no one asked for, but here it is anyway.
 
 ### Yet another dataloader? Why...
 
-Yes, it's true: the world may not need another dataloader, but I got tired of converting Torch tensors to JAX arrays and having this overhead everytime I want to train a model. So I decided: No more of that! It has to change!
+Yes, it's true: the world may not need another dataloader, but I got tired of converting Torch tensors to JAX arrays and having this overhead everytime I want to train a model. So I decided to instead convert Numpy arrays to JAX and not having to do `tensor.numpy()` everytime I want to use the data.
 
 ### Ok, but what does this do?
 
-In essence, Jaxonloader is simply a very thin layer around a JAX array. The idea is that you first analyse and preprocess your data using Polars or Pandas and once you have a `DataFrame` you're happy with and want to start training your model _only_ then comes Jaxonloader into play. You generate a `JaxonDataset` from a `DataFrame` and pass that into a `JaxonDataLoader`. The dataloader itself can be JITted, giving us a **massive** speedbost in training.
+It's a dataloader that is effectively the same as the PyTorch dataloader, except that it uses Numpy as the backend.
 
-### So all you're doing is iterating over a JAX array?
+### So all you're doing is iterating over an array?
 
 Yes. Do you really need more than that?
