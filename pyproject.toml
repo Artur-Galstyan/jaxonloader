@@ -9,10 +9,6 @@ authors = [
   {name = "Artur A. Galstyan", email = "mail@arturgalstyan.dev"},
 ]
 dependencies=[
-  "jax", 
-  "jaxlib",
-  "jaxtyping",
-  "equinox",
   "tqdm",
   "polars",
   "typing_extensions",

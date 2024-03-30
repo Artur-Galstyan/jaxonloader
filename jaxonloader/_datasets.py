@@ -4,12 +4,11 @@ import urllib.request
 import zipfile
 from collections.abc import Callable
 
-import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 import polars as pl
-from jaxtyping import Array
 from loguru import logger
+from numpy.typing import NDArray as Array
 
 from jaxonloader.dataset import JaxonDataset, SingleArrayDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
@@ -119,7 +118,7 @@ def get_tiny_shakespeare(
     idx_to_char = {i: ch for i, ch in enumerate(chars)}
 
     def encode(string: str) -> Array:
-        return jnp.array([char_to_idx[ch] for ch in string])
+        return np.array([char_to_idx[ch] for ch in string])
 
     def decode(latent: Array) -> str:
         return "".join([idx_to_char[idx] for idx in latent])
