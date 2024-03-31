@@ -1,5 +1,6 @@
 from jaxonloader import get_tiny_shakespeare
 from jaxonloader.dataloader import JaxonDataLoader
+from numpy.typing import NDArray
 
 
 def test_mnist():
@@ -17,6 +18,7 @@ def test_mnist():
         shuffle=True,
         drop_last=True,
     )
-    x = next(train_loader)
+    x = next(iter(train_loader))
+    assert type(x) == NDArray
 
     assert x.shape == (batch_size, block_size * 2)
