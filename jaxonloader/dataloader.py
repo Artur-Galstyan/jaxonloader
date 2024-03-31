@@ -32,10 +32,10 @@ class JaxonDataLoader:
             self.indices = rng.permutation(self.indices)
         self.index = 0
 
-    def __iter__(self):
+    def __iter__(self) -> "JaxonDataLoader":
         return self
 
-    def __next__(self) -> npt.NDArray:
+    def __next__(self) -> npt.NDArray | tuple[npt.NDArray, ...]:
         if self.index < len(self.indices):
             batch_indices = self.indices[self.index : self.index + self.batch_size]
             self.index += self.batch_size

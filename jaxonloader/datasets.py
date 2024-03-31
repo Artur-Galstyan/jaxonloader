@@ -1,5 +1,6 @@
 import os
 import pathlib
+import pickle
 import urllib.request
 import zipfile
 from collections.abc import Callable
@@ -10,7 +11,7 @@ import polars as pl
 from loguru import logger
 from numpy.typing import NDArray as Array
 
-from jaxonloader.dataset import JaxonDataset, SingleArrayDataset
+from jaxonloader.dataset import DataTargetDataset, JaxonDataset, SingleArrayDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
 
 
@@ -56,8 +57,36 @@ def get_mnist() -> tuple[JaxonDataset, JaxonDataset]:
     return train_dataset, test_dataset
 
 
-def get_cifar10():
-    raise NotImplementedError("get_cifar10 is not implemented yet.")
+@jaxonloader_cache(dataset_name="cifar10")
+def get_cifar10() -> tuple[JaxonDataset, JaxonDataset]:
+    data_url = "https://omnisium.eu-central-1.linodeobjects.com/cifar10/cifar-10-batches-py.zip"
+    data_path = pathlib.Path(JAXONLOADER_PATH) / "cifar10"
+    if not os.path.exists(data_path / "cifar-10-batches-py"):
+        logger.info(f"Downloading the dataset from {data_url}")
+        urllib.request.urlretrieve(data_url, data_path / "cifar-10-batches-py.zip")
+        with zipfile.ZipFile(data_path / "cifar-10-batches-py.zip", "r") as zip_ref:
+            logger.info(f"Extracting the dataset to {data_path}")
+            zip_ref.extractall(data_path)
+    n_batches = 5
+    train_data = []
+    train_labels = []
+    for i in range(1, n_batches + 1):
+        with open(data_path / f"cifar-10-batches-py/data_batch_{i}", "rb") as f:
+            data = pickle.load(f, encoding="bytes")
+            train_data.append(data[b"data"])
+            train_labels.append(data[b"labels"])
+    train_data = np.concatenate(train_data)
+    train_labels = np.concatenate(train_labels)
+
+    with open(data_path / "cifar-10-batches-py/test_batch", "rb") as f:
+        data = pickle.load(f, encoding="bytes")
+        test_data = data[b"data"]
+        test_labels = data[b"labels"]
+
+    train_dataset = DataTargetDataset(train_data, train_labels)
+    test_dataset = DataTargetDataset(test_data, test_labels)
+
+    return train_dataset, test_dataset
 
 
 def get_cifar100():
@@ -155,7 +184,6 @@ def from_dataframe(dataframe: pl.DataFrame | pd.DataFrame) -> JaxonDataset:
     Returns:
     A JaxonDataset.
     """
-
     df: pl.DataFrame = (
         pl.from_pandas(dataframe) if isinstance(dataframe, pd.DataFrame) else dataframe
     )
