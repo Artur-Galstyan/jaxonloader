@@ -1,6 +1,6 @@
+import numpy as np
 from jaxonloader import get_tiny_shakespeare
 from jaxonloader.dataloader import JaxonDataLoader
-from numpy.typing import NDArray
 
 
 def test_mnist():
@@ -19,6 +19,6 @@ def test_mnist():
         drop_last=True,
     )
     x = next(iter(train_loader))
-    assert type(x) == NDArray
+    assert isinstance(x, np.ndarray)
 
     assert x.shape == (batch_size, block_size * 2)

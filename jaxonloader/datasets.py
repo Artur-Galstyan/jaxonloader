@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 from loguru import logger
-from numpy.typing import NDArray as Array
+from numpy import ndarray as NDArray
 
 from jaxonloader.dataset import DataTargetDataset, JaxonDataset, SingleArrayDataset
 from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
@@ -101,7 +101,7 @@ def get_fashion_mnist():
 def get_tiny_shakespeare(
     block_size: int = 8, train_ratio: float = 0.8
 ) -> tuple[
-    JaxonDataset, JaxonDataset, int, Callable[[str], Array], Callable[[Array], str]
+    JaxonDataset, JaxonDataset, int, Callable[[str], NDArray], Callable[[NDArray], str]
 ]:
     """
     Get the tiny shakespeare dataset from Andrej Karpathy's char-rnn repository.
@@ -146,10 +146,10 @@ def get_tiny_shakespeare(
     char_to_idx = {ch: i for i, ch in enumerate(chars)}
     idx_to_char = {i: ch for i, ch in enumerate(chars)}
 
-    def encode(string: str) -> Array:
+    def encode(string: str) -> NDArray:
         return np.array([char_to_idx[ch] for ch in string])
 
-    def decode(latent: Array) -> str:
+    def decode(latent: NDArray) -> str:
         return "".join([idx_to_char[idx] for idx in latent])
 
     encoder = encode

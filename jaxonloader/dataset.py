@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from numpy.typing import NDArray
+from numpy import ndarray as NDArray
 
 
 class JaxonDataset(ABC):

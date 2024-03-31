@@ -1,6 +1,6 @@
+import numpy as np
 from jaxonloader import get_mnist
 from jaxonloader.dataloader import JaxonDataLoader
-from numpy.typing import NDArray
 
 
 def test_mnist():
@@ -13,7 +13,7 @@ def test_mnist():
     )
 
     x = next(iter(train_loader))
-    assert type(x) == NDArray
+    assert isinstance(x, np.ndarray)
     assert x.shape == (64, 785)
 
 
