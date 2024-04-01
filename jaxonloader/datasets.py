@@ -1,8 +1,6 @@
 import os
 import pathlib
 import pickle
-import urllib.request
-import zipfile
 from collections.abc import Callable
 
 import numpy as np
@@ -21,34 +19,9 @@ from jaxonloader.utils import (
 
 @jaxonloader_cache(dataset_name="mnist")
 def get_mnist() -> tuple[JaxonDataset, JaxonDataset]:
-    MNIST_TRAIN_URL = (
-        "https://omnisium.eu-central-1.linodeobjects.com/mnist/mnist_train.csv.zip"
-    )
-    MNIST_TEST_URL = (
-        "https://omnisium.eu-central-1.linodeobjects.com/mnist/mnist_test.csv.zip"
-    )
-
+    data_url = "https://omnisium.eu-central-1.linodeobjects.com/mnist/mnist.zip"
     data_path = pathlib.Path(JAXONLOADER_PATH) / "mnist"
-    if not os.path.exists(data_path / "mnist_train.csv"):
-        logger.info(f"Downloading the dataset from {MNIST_TRAIN_URL}")
-        urllib.request.urlretrieve(MNIST_TRAIN_URL, data_path / "mnist_train.csv.zip")
-        with zipfile.ZipFile(data_path / "mnist_train.csv.zip", "r") as zip_ref:
-            logger.info(f"Extracting the dataset to {data_path}")
-            zip_ref.extractall(data_path)
-
-    if not os.path.exists(data_path / "mnist_test.csv"):
-        logger.info(f"Downloading the dataset from {MNIST_TEST_URL}")
-        urllib.request.urlretrieve(MNIST_TEST_URL, data_path / "mnist_test.csv.zip")
-        with zipfile.ZipFile(data_path / "mnist_test.csv.zip", "r") as zip_ref:
-            logger.info(f"Extracting the dataset to {data_path}")
-            zip_ref.extractall(data_path)
-
-    assert os.path.exists(
-        data_path / "mnist_train.csv"
-    ), "Failed to download the dataset"
-    assert os.path.exists(
-        data_path / "mnist_test.csv"
-    ), "Failed to download the dataset"
+    download_and_extract_zip(data_url, data_path)
 
     train_df = pl.read_csv(data_path / "mnist_train.csv")
     test_df = pl.read_csv(data_path / "mnist_test.csv")
@@ -65,12 +38,7 @@ def get_mnist() -> tuple[JaxonDataset, JaxonDataset]:
 def get_cifar10() -> tuple[JaxonDataset, JaxonDataset]:
     data_url = "https://omnisium.eu-central-1.linodeobjects.com/cifar10/cifar-10-batches-py.zip"
     data_path = pathlib.Path(JAXONLOADER_PATH) / "cifar10"
-    if not os.path.exists(data_path / "cifar-10-batches-py"):
-        logger.info(f"Downloading the dataset from {data_url}")
-        urllib.request.urlretrieve(data_url, data_path / "cifar-10-batches-py.zip")
-        with zipfile.ZipFile(data_path / "cifar-10-batches-py.zip", "r") as zip_ref:
-            logger.info(f"Extracting the dataset to {data_path}")
-            zip_ref.extractall(data_path)
+    download_and_extract_zip(data_url, data_path)
     n_batches = 5
     train_data = []
     train_labels = []
@@ -100,6 +68,12 @@ def get_cifar100() -> tuple[JaxonDataset, JaxonDataset]:
     )
     data_path = pathlib.Path(JAXONLOADER_PATH) / "cifar100"
     download_and_extract_zip(dataset_url, data_path)
+
+    if os.path.exists(data_path) and not os.path.exists(data_path / "cifar-100-python"):
+        raise FileNotFoundError(
+            f"The data folder {data_path} exists but the dataset is missing. "
+            + "If this error persists, please delete the data folder and try again."
+        )
 
     with open(data_path / "cifar-100-python/train", "rb") as f:
         train_data = pickle.load(f, encoding="bytes")

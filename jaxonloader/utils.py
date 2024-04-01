@@ -1,5 +1,6 @@
 import os
 import pathlib
+import shutil
 import urllib.request
 import zipfile
 from functools import wraps
@@ -70,8 +71,8 @@ def show_progress(block_num, block_size, total_size):
 
 
 def download_and_extract_zip(url: str, data_path: pathlib.Path) -> None:
-    print(os.path.exists(data_path))
-    print(len(os.listdir(data_path)))
+    if os.path.exists(data_path / ".DS_Store"):
+        os.remove(data_path / ".DS_Store")
     if not os.path.exists(data_path) or len(os.listdir(data_path)) == 0:
         logger.info(f"Downloading the dataset from {url}")
         urllib.request.urlretrieve(url, data_path / "temp.zip", show_progress)
@@ -79,5 +80,7 @@ def download_and_extract_zip(url: str, data_path: pathlib.Path) -> None:
             logger.info(f"Extracting the dataset to {data_path}")
             zip_ref.extractall(data_path)
         os.remove(data_path / "temp.zip")
+        if os.path.exists(data_path / "__MACOSX"):
+            shutil.rmtree(data_path / "__MACOSX")
     else:
         logger.info(f"Dataset already exists in {data_path}")
