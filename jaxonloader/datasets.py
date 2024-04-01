@@ -12,7 +12,11 @@ from loguru import logger
 from numpy import ndarray as NDArray
 
 from jaxonloader.dataset import DataTargetDataset, JaxonDataset, SingleArrayDataset
-from jaxonloader.utils import jaxonloader_cache, JAXONLOADER_PATH
+from jaxonloader.utils import (
+    download_and_extract_zip,
+    jaxonloader_cache,
+    JAXONLOADER_PATH,
+)
 
 
 @jaxonloader_cache(dataset_name="mnist")
@@ -89,8 +93,41 @@ def get_cifar10() -> tuple[JaxonDataset, JaxonDataset]:
     return train_dataset, test_dataset
 
 
-def get_cifar100():
-    raise NotImplementedError("get_cifar100 is not implemented yet.")
+@jaxonloader_cache(dataset_name="cifar100")
+def get_cifar100() -> tuple[JaxonDataset, JaxonDataset]:
+    dataset_url = (
+        "https://omnisium.eu-central-1.linodeobjects.com/cifar100/cifar-100-python.zip"
+    )
+    data_path = pathlib.Path(JAXONLOADER_PATH) / "cifar100"
+    download_and_extract_zip(dataset_url, data_path)
+
+    with open(data_path / "cifar-100-python/train", "rb") as f:
+        train_data = pickle.load(f, encoding="bytes")
+    with open(data_path / "cifar-100-python/test", "rb") as f:
+        test_data = pickle.load(f, encoding="bytes")
+
+    class CiFar100Dataset(JaxonDataset):
+        def __init__(
+            self, data: NDArray, fine_labels: list[int], coarse_labels: list[int]
+        ):
+            self.data = data
+            self.fine_labels = np.array(fine_labels)
+            self.coarse_labels = np.array(coarse_labels)
+
+        def __len__(self) -> int:
+            return len(self.data)
+
+        def __getitem__(self, idx: NDArray) -> tuple[NDArray, NDArray, NDArray]:
+            return self.data[idx], self.fine_labels[idx], self.coarse_labels[idx]
+
+    train_dataset = CiFar100Dataset(
+        train_data[b"data"], train_data[b"fine_labels"], train_data[b"coarse_labels"]
+    )
+    test_dataset = CiFar100Dataset(
+        test_data[b"data"], test_data[b"fine_labels"], test_data[b"coarse_labels"]
+    )
+
+    return train_dataset, test_dataset
 
 
 def get_fashion_mnist():

@@ -1,6 +1,6 @@
 import numpy as np
-from jaxonloader import get_mnist
 from jaxonloader.dataloader import JaxonDataLoader
+from jaxonloader.datasets import get_mnist
 
 
 def test_mnist():

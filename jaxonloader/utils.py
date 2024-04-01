@@ -1,13 +1,18 @@
 import os
 import pathlib
+import urllib.request
+import zipfile
 from functools import wraps
 from typing import Any
 
+import progressbar
 from loguru import logger
 from numpy.random import default_rng
 
 
 JAXONLOADER_PATH = pathlib.Path.home() / ".jaxonloader"
+
+pbar = None
 
 
 def _make_jaxonloader_dir_if_not_exists():
@@ -48,3 +53,31 @@ def deprecation_warning(message: str) -> Any:
 
 def get_rng(seed: int | None) -> Any:
     return default_rng(seed) if seed is not None else default_rng()
+
+
+def show_progress(block_num, block_size, total_size):
+    global pbar
+    if pbar is None:
+        pbar = progressbar.ProgressBar(maxval=total_size)
+        pbar.start()
+
+    downloaded = block_num * block_size
+    if downloaded < total_size:
+        pbar.update(downloaded)
+    else:
+        pbar.finish()
+        pbar = None
+
+
+def download_and_extract_zip(url: str, data_path: pathlib.Path) -> None:
+    print(os.path.exists(data_path))
+    print(len(os.listdir(data_path)))
+    if not os.path.exists(data_path) or len(os.listdir(data_path)) == 0:
+        logger.info(f"Downloading the dataset from {url}")
+        urllib.request.urlretrieve(url, data_path / "temp.zip", show_progress)
+        with zipfile.ZipFile(data_path / "temp.zip", "r") as zip_ref:
+            logger.info(f"Extracting the dataset to {data_path}")
+            zip_ref.extractall(data_path)
+        os.remove(data_path / "temp.zip")
+    else:
+        logger.info(f"Dataset already exists in {data_path}")

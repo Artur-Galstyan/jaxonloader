@@ -1,6 +1,6 @@
 import numpy as np
-from jaxonloader import get_tiny_shakespeare
 from jaxonloader.dataloader import JaxonDataLoader
+from jaxonloader.datasets import get_tiny_shakespeare
 
 
 def test_mnist():

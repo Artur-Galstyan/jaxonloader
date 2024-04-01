@@ -10,7 +10,10 @@ authors = [
 ]
 dependencies=[
   "tqdm",
+  "jaxtyping",
+  "progressbar",
   "polars",
+  "beartype",
   "typing_extensions",
   "loguru",
   "kaggle",
