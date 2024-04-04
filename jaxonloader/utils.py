@@ -70,6 +70,16 @@ def show_progress(block_num, block_size, total_size):
         pbar = None
 
 
+def download(url: str, data_path: pathlib.Path) -> None:
+    if not os.path.exists(data_path):
+        os.makedirs(data_path)
+    file_name = url.split("/")[-1]
+    logger.info(f"Downloading from {url}")
+    urllib.request.urlretrieve(url, data_path / file_name, show_progress)
+    if os.path.exists(data_path / "__MACOSX"):
+        shutil.rmtree(data_path / "__MACOSX")
+
+
 def download_and_extract_zip(url: str, data_path: pathlib.Path) -> None:
     if os.path.exists(data_path / ".DS_Store"):
         os.remove(data_path / ".DS_Store")
