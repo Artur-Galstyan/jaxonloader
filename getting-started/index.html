@@ -234,14 +234,14 @@
 <p>Install this package using pip like so:</p>
 <p><code>pip install jaxonloader</code></p>
 <h2 id="usage">Usage</h2>
-<p>The <em>intended</em> way to use <code>Jaxonloader</code> is the following:</p>
+<p>It's quite similar to the PyTorch dataloader.</p>
 <ol>
-<li>You start with a <code>DataFrame</code></li>
-<li>You preprocess your data in that <code>DataFrame</code></li>
-<li>You convert that <code>DataFrame</code> into a <code>JaxonDataset</code></li>
-<li>You pass that <code>JaxonDataset</code> into a <code>JaxonDataLoader</code></li>
+<li>Create a dataset which inherits from <code>jaxonloader.JaxonDataset</code>.</li>
+<li>Implement all the abstract methods.</li>
+<li>Create a dataloader using <code>jaxonloader.JaxonDataLoader</code>.</li>
+<li>Iterate over the dataloader.</li>
 <li>???</li>
-<li>Profit</li>
+<li>Profit!</li>
 </ol>
 <p>Here's an example:</p>
 <pre><code class="language-python">
@@ -258,15 +258,13 @@ df['column'] = df['column'].apply(lambda x: x + 1)
 jaxon_dataset = from_dataframe(df)
 
 # Step 4
-jaxon_dataloader, state = make(
+jaxon_dataloader = JaxonDataLoader(
     jaxon_dataset, batch_size=64, shuffle=True, key=subkey, jit=True
 )
 
 # Step 5
-while it := jaxon_dataloader(state):
-    x, state, done = it
-    if done:
-        break
+for x in jaxon_dataloader:
+    pass
 
 # Step 6
 print('Profit!')

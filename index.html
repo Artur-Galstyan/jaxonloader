@@ -223,23 +223,20 @@
 <nav>
     <ul>
         <li><a href="#jaxonloader">Jaxonloader</a></li>
-        <li><a href="#yet-another-dataloader-why">Yet another dataloader? Why...</a></li><li><a href="#ok-but-what-does-this-do">Ok, but what does this do?</a></li><li><a href="#so-all-youre-doing-is-iterating-over-a-jax-array">So all you're doing is iterating over a JAX array?</a></li><li><a href="#i-guess-youre-right-wait-its-faster-how-much">I guess you're right. ...Wait it's faster? How much?</a></li>
+        <li><a href="#yet-another-dataloader-why">Yet another dataloader? Why...</a></li><li><a href="#ok-but-what-does-this-do">Ok, but what does this do?</a></li><li><a href="#so-all-youre-doing-is-iterating-over-an-array">So all you're doing is iterating over an array?</a></li>
     </ul>
 </nav>
 </aside>
             <main id="terminal-mkdocs-main-content">
 <section id="mkdocs-terminal-content">
     <h1 id="jaxonloader">Jaxonloader</h1>
-<p>A blazingly fast ⚡️ dataloader for JAX that no one asked for, but here it is anyway.</p>
+<p>A dataloader that no one asked for, but here it is anyway.</p>
 <h3 id="yet-another-dataloader-why">Yet another dataloader? Why...</h3>
-<p>Yes, it's true: the world may not need another dataloader, but I got tired of converting Torch tensors to JAX arrays and having this overhead everytime I want to train a model. So I decided: No more of that! It has to change!</p>
+<p>Yes, it's true: the world may not need another dataloader, but I got tired of converting Torch tensors to JAX arrays and having this overhead everytime I want to train a model. So I decided to instead convert Numpy arrays to JAX and not having to do <code>tensor.numpy()</code> everytime I want to use the data.</p>
 <h3 id="ok-but-what-does-this-do">Ok, but what does this do?</h3>
-<p>In essence, Jaxonloader is simply a very thin layer around a JAX array. The idea is that you first analyse and preprocess your data using Polars or Pandas and once you have a <code>DataFrame</code> you're happy with and want to start training your model <em>only</em> then comes Jaxonloader into play. You generate a <code>JaxonDataset</code> from a <code>DataFrame</code> and pass that into a <code>JaxonDataLoader</code>. The dataloader itself can be JITted, giving us a <strong>massive</strong> speedbost in training.</p>
-<h3 id="so-all-youre-doing-is-iterating-over-a-jax-array">So all you're doing is iterating over a JAX array?</h3>
+<p>It's a dataloader that is effectively the same as the PyTorch dataloader, except that it uses Numpy as the backend.</p>
+<h3 id="so-all-youre-doing-is-iterating-over-an-array">So all you're doing is iterating over an array?</h3>
 <p>Yes. Do you really need more than that?</p>
-<h3 id="i-guess-youre-right-wait-its-faster-how-much">I guess you're right. ...Wait it's faster? How much?</h3>
-<p>Since we can JIT the dataloader, we can have a 31x increase in iteration time over the PyTorch dataloader.</p>
-<p><img alt="Performance" src="images/performance.png" /></p>
 </section>
 
             </main>

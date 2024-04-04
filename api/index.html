@@ -223,7 +223,6 @@
 <nav>
     <ul>
         <li><a href="#jaxonloaderdataloaderjaxondataloader">jaxonloader.dataloader.JaxonDataLoader</a></li>
-        <li><a href="#jaxonloaderdataloadermake">jaxonloader.dataloader.make</a></li>
         
     </ul>
 </nav>
@@ -231,47 +230,14 @@
             <main id="terminal-mkdocs-main-content">
 <section id="mkdocs-terminal-content">
     <h2 id="jaxonloaderdataloaderjaxondataloader">jaxonloader.dataloader.JaxonDataLoader</h2>
-<p><strong>Note, this class is not meant to be used directly. Instead, use the <code>jaxonloader.dataloader.make</code>
-function to create a <code>JaxonDataLoader</code> with an <code>index</code>!</strong></p>
 <p>Arguments:</p>
 <ul>
 <li><code>dataset</code> (JaxonDataset): The dataset to load data from.</li>
 <li><code>batch_size</code> (int): The size of the batch to load.</li>
 <li><code>shuffle</code> (bool): Whether to shuffle the data.</li>
 <li><code>drop_last</code> (bool): Whether to drop the last batch if it's smaller than <code>batch_size</code>.</li>
-<li><code>key</code> (PRNGKey): The key to use for shuffling. If no shuffling is done, this key is not used.</li>
+<li><code>key</code> (int): The key to use for shuffling. If no shuffling is done, this key is not used.</li>
 </ul>
-<h2 id="jaxonloaderdataloadermake">jaxonloader.dataloader.make</h2>
-<p>Creates a <code>JaxonDataLoader</code> or a <code>JITJaxonDataLoader</code> depending on the <code>jit</code> argument as well as an
-index state.</p>
-<p>Arguments:</p>
-<ul>
-<li><code>dataset</code> (JaxonDataset): The dataset to load data from.</li>
-<li><code>batch_size</code> (int): The size of the batch to load.</li>
-<li><code>shuffle</code> (bool): Whether to shuffle the data.</li>
-<li><code>drop_last</code> (bool): Whether to drop the last batch if it's smaller than <code>batch_size</code>.</li>
-<li><code>key</code> (PRNGKeyArray): The key to use for shuffling. If no shuffling is done, this key is not used.</li>
-<li><code>jit</code> (bool): Whether to JIT compile the data loader (recommended).</li>
-</ul>
-<p>Returns:</p>
-<ul>
-<li>If <code>jit</code> is <code>True</code>, returns a tuple of a <code>JITJaxonDataLoader</code> and a <code>jaxonloader.dataloader.Index</code>.</li>
-<li>If <code>jit</code> is <code>False</code>, returns a tuple of a <code>JaxonDataLoader</code> and a <code>jaxonloader.dataloader.Index</code>.</li>
-</ul>
-<pre><code class="language-python">from jaxonloader.dataloader import make, from_dataframe
-import pandas as pd
-
-df = pd.read_csv('data.csv')
-dataset = from_dataframe(df)
-jaxon_dataloader, index = make(dataset, batch_size=32, shuffle=True, drop_last=True, key=jax.random.PRNGKey(0), jit=True)
-
-
-while it := jaxon_dataloader(index):
-    x, index, done = it
-    if done:
-        break
-
-</code></pre>
 </section>
 
             </main>
