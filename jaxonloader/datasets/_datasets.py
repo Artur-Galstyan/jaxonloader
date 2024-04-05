@@ -185,6 +185,21 @@ def get_tiny_shakespeare(
     return train_dataset, test_dataset, vocab_size, encoder, decoder
 
 
+@jaxonloader_cache(dataset_name="titanic")
+def get_titanic():
+    data_url = "https://omnisium.eu-central-1.linodeobjects.com/titanic/titanic.zip"
+    data_path = pathlib.Path(JAXONLOADER_PATH) / "titanic"
+    download_and_extract_zip(data_url, data_path)
+
+    train = pd.read_csv(data_path / "train.csv").to_numpy()
+    test = pd.read_csv(data_path / "test.csv").to_numpy()
+
+    train_dataset = SingleArrayDataset(train)
+    test_dataset = SingleArrayDataset(test)
+
+    return train_dataset, test_dataset
+
+
 def from_dataframe(dataframe: pl.DataFrame | pd.DataFrame) -> JaxonDataset:
     """
     Convert a polars.DataFrame (or pandas.DataFrame) to a JaxonDataset.

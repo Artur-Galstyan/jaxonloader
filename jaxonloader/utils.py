@@ -10,8 +10,8 @@ import progressbar
 from loguru import logger
 from numpy.random import default_rng
 
+from jaxonloader.config import JAXONLOADER_PATH
 
-JAXONLOADER_PATH = pathlib.Path.home() / ".jaxonloader"
 
 pbar = None
 
