@@ -198,7 +198,19 @@ def get_titanic() -> JaxonDataset:
         )
         return df
 
+    def _embarked_to_int(df: pl.DataFrame) -> pl.DataFrame:
+        df = df.with_columns(
+            pl.when(pl.col("Embarked") == "S")
+            .then(0)
+            .when(pl.col("Embarked") == "C")
+            .then(1)
+            .otherwise(2)
+            .alias("Embarked")
+        )
+        return df
+
     train = _gender_to_int(train_df)
+    train = _embarked_to_int(train)
     train_data = train.select(pl.exclude("Survived")).to_numpy()
     train_target = train.select(pl.col("Survived")).to_numpy()
 
