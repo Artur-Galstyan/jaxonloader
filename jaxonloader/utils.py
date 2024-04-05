@@ -92,5 +92,3 @@ def download_and_extract_zip(url: str, data_path: pathlib.Path) -> None:
         os.remove(data_path / "temp.zip")
         if os.path.exists(data_path / "__MACOSX"):
             shutil.rmtree(data_path / "__MACOSX")
-    else:
-        logger.info(f"Dataset already exists in {data_path}")

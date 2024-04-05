@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 from jaxtyping import Int
 from numpy import ndarray as NDArray
@@ -12,7 +13,7 @@ class JaxonDataset(ABC):
     @abstractmethod
     def __getitem__(
         self, idx: Int[NDArray, " batch_size"] | slice
-    ) -> NDArray | tuple[NDArray, ...]:
+    ) -> Union[NDArray, tuple[NDArray, ...], "JaxonDataset"]:
         raise NotImplementedError()
 
 
@@ -23,7 +24,7 @@ class SingleArrayDataset(JaxonDataset):
     def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, idx) -> NDArray:
+    def __getitem__(self, idx):
         return self.data[idx]
 
 
@@ -37,5 +38,8 @@ class DataTargetDataset(JaxonDataset):
     def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, idx) -> tuple[NDArray, NDArray]:
-        return self.data[idx], self.target[idx]
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            return DataTargetDataset(self.data[idx], self.target[idx])
+        else:
+            return self.data[idx], self.target[idx]

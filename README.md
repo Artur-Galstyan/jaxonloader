@@ -2,6 +2,10 @@
 
 A dataloader that no one asked for, but here it is anyway.
 
+## Attention!
+
+This package is still in heavy development! There will be no backwards compatibility until version 1.0.0 is released and the API can/will change at any time without warning.
+
 ## Documentation
 
 Check out the docs [here](https://artur-galstyan.github.io/jaxonloader/)

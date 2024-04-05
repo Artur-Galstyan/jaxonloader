@@ -194,9 +194,7 @@ def get_titanic() -> JaxonDataset:
 
     def _gender_to_int(df: pl.DataFrame) -> pl.DataFrame:
         df = df.with_columns(
-            pl.col("Sex")
-            .apply(lambda gender: 0 if gender == "male" else 1)
-            .alias("Sex")
+            pl.when(pl.col("Sex") == "male").then(0).otherwise(1).alias("Sex")
         )
         return df
 
