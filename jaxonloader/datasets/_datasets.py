@@ -209,8 +209,13 @@ def get_titanic() -> JaxonDataset:
         )
         return df
 
+    def _fill_nans(df: pl.DataFrame) -> pl.DataFrame:
+        df = df.fill_nan(0)
+        return df
+
     train = _gender_to_int(train_df)
     train = _embarked_to_int(train)
+    train = _fill_nans(train)
     train_data = train.select(pl.exclude("Survived")).to_numpy()
     train_target = train.select(pl.col("Survived")).to_numpy()
 
