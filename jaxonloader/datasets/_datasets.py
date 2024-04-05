@@ -91,7 +91,7 @@ def get_cifar100() -> tuple[JaxonDataset, JaxonDataset]:
         def __len__(self) -> int:
             return len(self.data)
 
-        def __getitem__(self, idx: NDArray) -> tuple[NDArray, NDArray, NDArray]:
+        def __getitem__(self, idx) -> tuple[NDArray, NDArray, NDArray]:
             return self.data[idx], self.fine_labels[idx], self.coarse_labels[idx]
 
     train_dataset = CiFar100Dataset(

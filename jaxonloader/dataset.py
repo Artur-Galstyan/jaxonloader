@@ -11,7 +11,7 @@ class JaxonDataset(ABC):
 
     @abstractmethod
     def __getitem__(
-        self, idx: Int[NDArray, " batch_size"]
+        self, idx: Int[NDArray, " batch_size"] | slice
     ) -> NDArray | tuple[NDArray, ...]:
         raise NotImplementedError()
 
@@ -23,7 +23,7 @@ class SingleArrayDataset(JaxonDataset):
     def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, idx: Int[NDArray, " batch_size"]) -> NDArray:
+    def __getitem__(self, idx) -> NDArray:
         return self.data[idx]
 
 
@@ -37,5 +37,5 @@ class DataTargetDataset(JaxonDataset):
     def __len__(self) -> int:
         return len(self.data)
 
-    def __getitem__(self, idx: Int[NDArray, " batch_size"]) -> tuple[NDArray, NDArray]:
+    def __getitem__(self, idx) -> tuple[NDArray, NDArray]:
         return self.data[idx], self.target[idx]
