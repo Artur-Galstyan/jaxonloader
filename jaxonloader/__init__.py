@@ -1,5 +1,6 @@
-from jaxonloader.dataset import JaxonDataset, SingleArrayDataset, DataTargetDataset  # noqa
-from jaxonloader.dataloader import JaxonDataLoader  # noqa
-from beartype.claw import beartype_this_package
+from jaxtyping import install_import_hook
 
-beartype_this_package()
+
+with install_import_hook(modules=["jaxonloader"], typechecker="beartype.beartype"):
+    from jaxonloader.dataset import JaxonDataset, SingleArrayDataset, DataTargetDataset  # noqa
+    from jaxonloader.dataloader import JaxonDataLoader  # noqa

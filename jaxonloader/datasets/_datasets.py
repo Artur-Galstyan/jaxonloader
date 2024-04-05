@@ -186,18 +186,27 @@ def get_tiny_shakespeare(
 
 
 @jaxonloader_cache(dataset_name="titanic")
-def get_titanic():
+def get_titanic() -> JaxonDataset:
     data_url = "https://omnisium.eu-central-1.linodeobjects.com/titanic/titanic.zip"
     data_path = pathlib.Path(JAXONLOADER_PATH) / "titanic"
     download_and_extract_zip(data_url, data_path)
+    train_df = pl.read_csv(data_path / "train.csv")
 
-    train = pd.read_csv(data_path / "train.csv").to_numpy()
-    test = pd.read_csv(data_path / "test.csv").to_numpy()
+    def _gender_to_int(df: pl.DataFrame) -> pl.DataFrame:
+        df = df.with_columns(
+            pl.col("Sex")
+            .apply(lambda gender: 0 if gender == "male" else 1)
+            .alias("Sex")
+        )
+        return df
 
-    train_dataset = SingleArrayDataset(train)
-    test_dataset = SingleArrayDataset(test)
+    train = _gender_to_int(train_df)
+    train_data = train.select(pl.exclude("Survived")).to_numpy()
+    train_target = train.select(pl.col("Survived")).to_numpy()
 
-    return train_dataset, test_dataset
+    train_dataset = DataTargetDataset(train_data, train_target)
+
+    return train_dataset
 
 
 def from_dataframe(dataframe: pl.DataFrame | pd.DataFrame) -> JaxonDataset:
