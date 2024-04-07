@@ -1,6 +1,6 @@
 [project]
 name = "jaxonloader"
-version = "0.3.4"
+version = "0.3.3"
 description = "A dataloader, but for JAX"
 readme = "README.md"
 requires-python ="~=3.10"
@@ -17,8 +17,9 @@ dependencies=[
   "typing_extensions",
   "loguru",
   "kaggle",
-  "pandas",
   "pyarrow",
+  "boto3",
+  "boto3-stubs"
 ]
 [project.optional-dependencies]
 dev = [
