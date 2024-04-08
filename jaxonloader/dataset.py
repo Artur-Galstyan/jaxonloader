@@ -12,8 +12,11 @@ class JaxonDataset(ABC):
 
     @abstractmethod
     def __getitem__(
-        self, idx: Int[NDArray, " batch_size"] | slice
-    ) -> Union[NDArray, tuple[NDArray, ...], "JaxonDataset"]:
+        self, idx: Int[NDArray, " batch_size"] | slice | int
+    ) -> Union[NDArray, tuple[NDArray, ...]]:
+        raise NotImplementedError()
+
+    def split(self, ratio: float) -> tuple["JaxonDataset", "JaxonDataset"]:
         raise NotImplementedError()
 
 
@@ -39,7 +42,4 @@ class DataTargetDataset(JaxonDataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        if isinstance(idx, slice):
-            return DataTargetDataset(self.data[idx], self.target[idx])
-        else:
-            return self.data[idx], self.target[idx]
+        return self.data[idx], self.target[idx]

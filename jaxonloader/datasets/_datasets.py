@@ -129,7 +129,7 @@ def get_tiny_shakespeare(
     ```
     """
     download_tinyshakespeare(target_path=target_path)
-    data_path = get_data_path("cifar100", target_path)
+    data_path = get_data_path("tinyshakespeare", target_path)
 
     def get_text():
         with open(data_path / "input.txt", "r") as f:

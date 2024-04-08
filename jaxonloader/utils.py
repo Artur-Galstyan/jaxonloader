@@ -32,7 +32,7 @@ def jaxonloader_cache(dataset_name: str) -> Any:
         def wrapper(*args: Any, **kwargs: Any):
             target_path = (
                 pathlib.Path(str(kwargs.get("target_path"))).resolve()
-                if "target_path" in kwargs
+                if "target_path" in kwargs and kwargs.get("target_path") is not None
                 else JAXONLOADER_PATH
             )
             expected_files = get_expected_files(dataset_name)
