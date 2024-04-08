@@ -30,6 +30,12 @@ class SingleArrayDataset(JaxonDataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
+    def split(self, ratio: float) -> tuple["SingleArrayDataset", "SingleArrayDataset"]:
+        split = int(len(self.data) * ratio)
+        return SingleArrayDataset(self.data[:split]), SingleArrayDataset(
+            self.data[split:]
+        )
+
 
 class DataTargetDataset(JaxonDataset):
     def __init__(self, data: NDArray, target: NDArray):
@@ -43,3 +49,9 @@ class DataTargetDataset(JaxonDataset):
 
     def __getitem__(self, idx):
         return self.data[idx], self.target[idx]
+
+    def split(self, ratio: float) -> tuple["DataTargetDataset", "DataTargetDataset"]:
+        split = int(len(self.data) * ratio)
+        return DataTargetDataset(
+            self.data[:split], self.target[:split]
+        ), DataTargetDataset(self.data[split:], self.target[split:])
