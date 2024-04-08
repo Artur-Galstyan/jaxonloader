@@ -1,28 +1,31 @@
-import os
 import pathlib
 import pickle
 from collections.abc import Callable
+from typing import Optional
 
 import numpy as np
-import pandas as pd
 import polars as pl
-from loguru import logger
 from numpy import ndarray as NDArray
 
 from jaxonloader.dataset import DataTargetDataset, JaxonDataset, SingleArrayDataset
+from jaxonloader.datasets.download import (
+    download_cifar10,
+    download_cifar100,
+    download_mnist,
+    download_tinyshakespeare,
+    download_titanic,
+)
 from jaxonloader.utils import (
-    download_and_extract_zip,
-    jaxonloader_cache,
+    get_data_path,
     JAXONLOADER_PATH,
 )
 
 
-@jaxonloader_cache(dataset_name="mnist")
-def get_mnist() -> tuple[JaxonDataset, JaxonDataset]:
-    data_url = "https://omnisium.eu-central-1.linodeobjects.com/mnist/mnist.zip"
-    data_path = pathlib.Path(JAXONLOADER_PATH) / "mnist"
-    download_and_extract_zip(data_url, data_path)
-
+def get_mnist(
+    *, target_path: Optional[str] = None
+) -> tuple[JaxonDataset, JaxonDataset]:
+    download_mnist(target_path=target_path)
+    data_path = get_data_path("mnist", target_path)
     train_df = pl.read_csv(data_path / "mnist_train.csv")
     test_df = pl.read_csv(data_path / "mnist_test.csv")
 
@@ -34,11 +37,9 @@ def get_mnist() -> tuple[JaxonDataset, JaxonDataset]:
     return train_dataset, test_dataset
 
 
-@jaxonloader_cache(dataset_name="cifar10")
-def get_cifar10() -> tuple[JaxonDataset, JaxonDataset]:
-    data_url = "https://omnisium.eu-central-1.linodeobjects.com/cifar10/cifar-10-batches-py.zip"
+def get_cifar10(target_path: Optional[str] = None) -> tuple[JaxonDataset, JaxonDataset]:
+    download_cifar10(target_path=target_path)
     data_path = pathlib.Path(JAXONLOADER_PATH) / "cifar10"
-    download_and_extract_zip(data_url, data_path)
     n_batches = 5
     train_data = []
     train_labels = []
@@ -61,19 +62,11 @@ def get_cifar10() -> tuple[JaxonDataset, JaxonDataset]:
     return train_dataset, test_dataset
 
 
-@jaxonloader_cache(dataset_name="cifar100")
-def get_cifar100() -> tuple[JaxonDataset, JaxonDataset]:
-    dataset_url = (
-        "https://omnisium.eu-central-1.linodeobjects.com/cifar100/cifar-100-python.zip"
-    )
-    data_path = pathlib.Path(JAXONLOADER_PATH) / "cifar100"
-    download_and_extract_zip(dataset_url, data_path)
-
-    if os.path.exists(data_path) and not os.path.exists(data_path / "cifar-100-python"):
-        raise FileNotFoundError(
-            f"The data folder {data_path} exists but the dataset is missing. "
-            + "If this error persists, please delete the data folder and try again."
-        )
+def get_cifar100(
+    target_path: Optional[str] = None,
+) -> tuple[JaxonDataset, JaxonDataset]:
+    download_cifar100(target_path=target_path)
+    data_path = get_data_path("cifar100", target_path)
 
     with open(data_path / "cifar-100-python/train", "rb") as f:
         train_data = pickle.load(f, encoding="bytes")
@@ -104,13 +97,12 @@ def get_cifar100() -> tuple[JaxonDataset, JaxonDataset]:
     return train_dataset, test_dataset
 
 
-def get_fashion_mnist():
+def get_fashion_mnist(target_path: Optional[str]):
     raise NotImplementedError("get_fashion_mnist is not implemented yet.")
 
 
-@jaxonloader_cache(dataset_name="tinyshakespeare")
 def get_tiny_shakespeare(
-    block_size: int = 8, train_ratio: float = 0.8
+    block_size: int = 8, train_ratio: float = 0.8, *, target_path: Optional[str] = None
 ) -> tuple[
     JaxonDataset, JaxonDataset, int, Callable[[str], NDArray], Callable[[NDArray], str]
 ]:
@@ -136,16 +128,10 @@ def get_tiny_shakespeare(
     train_dataset, test_dataset, vocab_size, encoder, decoder = get_tiny_shakespeare()
     ```
     """
+    download_tinyshakespeare(target_path=target_path)
+    data_path = get_data_path("tinyshakespeare", target_path)
 
     def get_text():
-        data_path = pathlib.Path(JAXONLOADER_PATH) / "tinyshakespeare/"
-        if not os.path.exists(data_path / "input.txt"):
-            import urllib.request
-
-            url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"  # noqa
-            logger.info(f"Downloading the dataset from {url}")
-            urllib.request.urlretrieve(url, data_path / "input.txt")
-
         with open(data_path / "input.txt", "r") as f:
             text = f.read()
         return text
@@ -185,11 +171,9 @@ def get_tiny_shakespeare(
     return train_dataset, test_dataset, vocab_size, encoder, decoder
 
 
-@jaxonloader_cache(dataset_name="titanic")
-def get_titanic() -> JaxonDataset:
-    data_url = "https://omnisium.eu-central-1.linodeobjects.com/titanic/titanic.zip"
+def get_titanic(target_path: Optional[str] = None) -> JaxonDataset:
+    download_titanic(target_path=target_path)
     data_path = pathlib.Path(JAXONLOADER_PATH) / "titanic"
-    download_and_extract_zip(data_url, data_path)
     train_df = pl.read_csv(data_path / "train.csv")
 
     def _gender_to_int(df: pl.DataFrame) -> pl.DataFrame:
@@ -222,40 +206,3 @@ def get_titanic() -> JaxonDataset:
     train_dataset = DataTargetDataset(train_data, train_target)
 
     return train_dataset
-
-
-def from_dataframe(dataframe: pl.DataFrame | pd.DataFrame) -> JaxonDataset:
-    """
-    Convert a polars.DataFrame (or pandas.DataFrame) to a JaxonDataset.
-
-    Args:
-    dataframe: A polars.DataFrame (or pandas.DataFrame).
-
-    Returns:
-    A JaxonDataset.
-    """
-    df: pl.DataFrame = (
-        pl.from_pandas(dataframe) if isinstance(dataframe, pd.DataFrame) else dataframe
-    )
-    data = df.to_numpy()
-    return SingleArrayDataset(data)
-
-
-def from_dataframes(*dataframes: pl.DataFrame | pd.DataFrame) -> list[JaxonDataset]:
-    """
-    Convert a list of polars.DataFrame (or pandas.DataFrame) to a list of JaxonDataset.
-
-    Args:
-        dataframes: A list of polars.DataFrame (or pandas.DataFrame).
-
-    Returns:
-        A list of JaxonDataset.
-    """
-    datasets: list[JaxonDataset] = []
-    for df in dataframes:
-        dataframe: pl.DataFrame = (
-            pl.from_pandas(df) if isinstance(df, pd.DataFrame) else df
-        )
-        data = dataframe.to_numpy()
-        datasets.append(SingleArrayDataset(data))
-    return datasets

@@ -17,8 +17,9 @@ dependencies=[
   "typing_extensions",
   "loguru",
   "kaggle",
-  "pandas",
   "pyarrow",
+  "boto3",
+  "boto3-stubs"
 ]
 [project.optional-dependencies]
 dev = [
