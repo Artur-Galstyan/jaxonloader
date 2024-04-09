@@ -1,4 +1,3 @@
-import pathlib
 import pickle
 from collections.abc import Callable
 from typing import Optional
@@ -15,17 +14,12 @@ from jaxonloader.datasets.download import (
     download_tinyshakespeare,
     download_titanic,
 )
-from jaxonloader.utils import (
-    get_data_path,
-    JAXONLOADER_PATH,
-)
 
 
 def get_mnist(
     *, target_path: Optional[str] = None
 ) -> tuple[JaxonDataset, JaxonDataset]:
-    download_mnist(target_path=target_path)
-    data_path = get_data_path("mnist", target_path)
+    data_path = download_mnist(target_path=target_path)
     train_df = pl.read_csv(data_path / "mnist_train.csv")
     test_df = pl.read_csv(data_path / "mnist_test.csv")
 
@@ -38,8 +32,7 @@ def get_mnist(
 
 
 def get_cifar10(target_path: Optional[str] = None) -> tuple[JaxonDataset, JaxonDataset]:
-    download_cifar10(target_path=target_path)
-    data_path = pathlib.Path(JAXONLOADER_PATH) / "cifar10"
+    data_path = download_cifar10(target_path=target_path)
     n_batches = 5
     train_data = []
     train_labels = []
@@ -65,8 +58,7 @@ def get_cifar10(target_path: Optional[str] = None) -> tuple[JaxonDataset, JaxonD
 def get_cifar100(
     target_path: Optional[str] = None,
 ) -> tuple[JaxonDataset, JaxonDataset]:
-    download_cifar100(target_path=target_path)
-    data_path = get_data_path("cifar100", target_path)
+    data_path = download_cifar100(target_path=target_path)
 
     with open(data_path / "cifar-100-python/train", "rb") as f:
         train_data = pickle.load(f, encoding="bytes")
@@ -128,8 +120,7 @@ def get_tiny_shakespeare(
     train_dataset, test_dataset, vocab_size, encoder, decoder = get_tiny_shakespeare()
     ```
     """
-    download_tinyshakespeare(target_path=target_path)
-    data_path = get_data_path("tinyshakespeare", target_path)
+    data_path = download_tinyshakespeare(target_path=target_path)
 
     def get_text():
         with open(data_path / "input.txt", "r") as f:
@@ -172,8 +163,7 @@ def get_tiny_shakespeare(
 
 
 def get_titanic(target_path: Optional[str] = None) -> JaxonDataset:
-    download_titanic(target_path=target_path)
-    data_path = pathlib.Path(JAXONLOADER_PATH) / "titanic"
+    data_path = download_titanic(target_path=target_path)
     train_df = pl.read_csv(data_path / "train.csv")
 
     def _gender_to_int(df: pl.DataFrame) -> pl.DataFrame:
