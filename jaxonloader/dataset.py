@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Union
 
-from jaxtyping import Int
+from beartype.typing import Union
+from jaxtyping import Array, Int
 from numpy import ndarray as NDArray
 
 
@@ -12,8 +12,8 @@ class JaxonDataset(ABC):
 
     @abstractmethod
     def __getitem__(
-        self, idx: Int[NDArray, " batch_size"] | slice | int
-    ) -> Union[NDArray, tuple[NDArray, ...]]:
+        self, idx: Int[Array | NDArray, " batch_size"] | slice | int
+    ) -> Union[Array | NDArray, tuple[Array | NDArray, ...]]:
         raise NotImplementedError()
 
     def split(self, ratio: float) -> tuple["JaxonDataset", "JaxonDataset"]:
@@ -21,7 +21,7 @@ class JaxonDataset(ABC):
 
 
 class SingleArrayDataset(JaxonDataset):
-    def __init__(self, data: NDArray):
+    def __init__(self, data: Array | NDArray):
         self.data = data
 
     def __len__(self) -> int:
@@ -38,7 +38,7 @@ class SingleArrayDataset(JaxonDataset):
 
 
 class DataTargetDataset(JaxonDataset):
-    def __init__(self, data: NDArray, target: NDArray):
+    def __init__(self, data: Array | NDArray, target: Array | NDArray):
         self.data = data
         self.target = target
         if len(data) != len(target):

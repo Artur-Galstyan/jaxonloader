@@ -1,6 +1,6 @@
 [project]
 name = "jaxonloader"
-version = "0.3.6"
+version = "0.3.7"
 description = "A dataloader, but for JAX"
 readme = "README.md"
 requires-python ="~=3.10"
@@ -9,17 +9,17 @@ authors = [
   {name = "Artur A. Galstyan", email = "mail@arturgalstyan.dev"},
 ]
 dependencies=[
-  "tqdm",
   "jaxtyping",
   "progressbar",
   "polars",
   "beartype",
   "typing_extensions",
   "loguru",
-  "kaggle",
   "pyarrow",
   "boto3",
-  "boto3-stubs"
+  "boto3-stubs",
+  "jax",
+  "jaxlib"
 ]
 [project.optional-dependencies]
 dev = [
