@@ -1,5 +1,7 @@
 import numpy as np
-from numpy import typing as npt
+from beartype.typing import Union
+from jaxtyping import Array
+from numpy import ndarray as NDArray
 
 from jaxonloader import JaxonDataset
 from jaxonloader.utils import get_rng
@@ -35,7 +37,7 @@ class JaxonDataLoader:
     def __iter__(self) -> "JaxonDataLoader":
         return self
 
-    def __next__(self) -> npt.NDArray | tuple[npt.NDArray, ...]:
+    def __next__(self) -> Array | NDArray | tuple[Union[NDArray, Array], ...]:
         if self.index < len(self.indices):
             batch_indices = self.indices[self.index : self.index + self.batch_size]
             self.index += self.batch_size
