@@ -1,6 +1,6 @@
 [project]
 name = "jaxonloader"
-version = "0.3.8"
+version = "0.3.9"
 description = "A dataloader, but for JAX"
 readme = "README.md"
 requires-python ="~=3.10"
@@ -10,7 +10,7 @@ authors = [
 ]
 dependencies=[
   "jaxtyping",
-  "progressbar",
+  "progressbar2",
   "polars",
   "beartype",
   "typing_extensions",
