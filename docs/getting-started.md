@@ -20,7 +20,7 @@ Here's an example:
 ```python
 
 import pandas as pd
-from jaxonloader import make, from_dataframe
+from jaxonloader import JaxonDataLoader, SingleArrayDataset
 
 # Step 1
 df = pd.read_csv('data.csv')
@@ -29,11 +29,11 @@ df = pd.read_csv('data.csv')
 df['column'] = df['column'].apply(lambda x: x + 1)
 
 # Step 3
-jaxon_dataset = from_dataframe(df)
+jaxon_dataset = SingleArrayDataset(df.to_numpy())
 
 # Step 4
 jaxon_dataloader = JaxonDataLoader(
-    jaxon_dataset, batch_size=64, shuffle=True, key=subkey, jit=True
+    jaxon_dataset, batch_size=64, shuffle=True
 )
 
 # Step 5

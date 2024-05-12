@@ -33,8 +33,6 @@ train_loader = JaxonDataLoader(
     batch_size=4,
     shuffle=True,
     drop_last=True,
-    key=key,
-    jit=True
 )
 for x in train_loader:
     pass

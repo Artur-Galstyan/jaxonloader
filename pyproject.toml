@@ -1,7 +1,7 @@
 [project]
 name = "jaxonloader"
-version = "0.3.9"
-description = "A dataloader, but for JAX"
+version = "0.4.0"
+description = "A dataloader, but for JAX/Numpy"
 readme = "README.md"
 requires-python ="~=3.10"
 license = {file = "LICENSE"}
